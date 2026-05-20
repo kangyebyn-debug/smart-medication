@@ -1,4 +1,5 @@
 {
   "terminal.integrated.defaultProfile.windows": "Git Bash",
-  "files.eol": "\n"
+  "files.eol": "\n",
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe"
 }
