@@ -2,57 +2,77 @@ import httpx
 import xml.etree.ElementTree as ET
 from app.config import SERVICE_KEY
 
-BASE_URL = "https://apis.data.go.kr/1471000/DURPrdlstInfoService03"
+DUR_URL  = "https://apis.data.go.kr/1471000/DURPrdlstInfoService03"
+EASY_URL = "https://apis.data.go.kr/1471000/DrbEasyDrugInfoService"
 
 
 def _parse_xml_items(xml_text: str) -> list:
-    """공공 API XML 응답에서 <item> 목록을 dict 리스트로 변환."""
     try:
         root = ET.fromstring(xml_text)
     except ET.ParseError:
         return []
-
-    result_code = root.findtext(".//resultCode", "")
-    if result_code != "00":
+    if root.findtext(".//resultCode", "") != "00":
         return []
-
     items = root.find(".//items")
     if items is None:
         return []
+    return [{child.tag: child.text for child in item} for item in items.findall("item")]
 
-    return [
-        {child.tag: child.text for child in item}
-        for item in items.findall("item")
-    ]
+
+async def _dur_get(endpoint: str, name: str, page: int = 1, size: int = 20) -> list:
+    params = {
+        "serviceKey": SERVICE_KEY,
+        "pageNo": page,
+        "numOfRows": size,
+        "itemName": name,
+    }
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(f"{DUR_URL}/{endpoint}", params=params, timeout=15)
+        resp.raise_for_status()
+    return _parse_xml_items(resp.text)
 
 
 async def search_drug_by_name(name: str, page: int = 1, size: int = 10) -> list:
-    """DUR 품목정보 조회 — 상표명으로 약품 검색."""
-    url = f"{BASE_URL}/getDurPrdlstInfoList03"
-    params = {
-        "serviceKey": SERVICE_KEY,
-        "pageNo": page,
-        "numOfRows": size,
-        "itemName": name,
-    }
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url, params=params, timeout=10)
-        resp.raise_for_status()
-
-    return _parse_xml_items(resp.text)
+    return await _dur_get("getDurPrdlstInfoList03", name, page, size)
 
 
 async def get_interactions_by_item_name(name: str, page: int = 1, size: int = 20) -> list:
-    """병용금기 정보조회 — 약품명으로 병용금기 목록 반환."""
-    url = f"{BASE_URL}/getUsjntTabooInfoList03"
+    return await _dur_get("getUsjntTabooInfoList03", name, page, size)
+
+
+async def get_pregnancy_warnings(name: str, page: int = 1, size: int = 20) -> list:
+    return await _dur_get("getPwnmTabooInfoList03", name, page, size)
+
+
+async def get_elderly_warnings(name: str, page: int = 1, size: int = 20) -> list:
+    return await _dur_get("getOdsnTabooInfoList03", name, page, size)
+
+
+async def get_age_warnings(name: str, page: int = 1, size: int = 20) -> list:
+    return await _dur_get("getSpcifyAgrdeTabooInfoList03", name, page, size)
+
+
+async def get_easy_drug_info(name: str) -> dict:
+    """e약은요 API — itemImage URL, 효능(efcyQesitm) 반환."""
     params = {
         "serviceKey": SERVICE_KEY,
-        "pageNo": page,
-        "numOfRows": size,
         "itemName": name,
+        "type": "json",
+        "numOfRows": 1,
+        "pageNo": 1,
     }
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url, params=params, timeout=10)
-        resp.raise_for_status()
-
-    return _parse_xml_items(resp.text)
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.get(f"{EASY_URL}/getDrbEasyDrugList", params=params, timeout=10)
+            resp.raise_for_status()
+        data = resp.json()
+        body = data.get("body") or data.get("response", {}).get("body", {})
+        items = body.get("items", [])
+        if isinstance(items, list) and items:
+            return items[0]
+        if isinstance(items, dict):
+            item = items.get("item", {})
+            return item if isinstance(item, dict) else {}
+    except Exception:
+        pass
+    return {}
