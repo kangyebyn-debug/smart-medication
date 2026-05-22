@@ -9,12 +9,11 @@ const WARN_TABS = [
   { key: "age",         label: "연령금기", icon: "👶", color: "blue" },
 ];
 const COLOR = {
-  red:   { wrap: "border-red-100 bg-red-50",   text: "text-red-600",   badge: "bg-red-100 text-red-700" },
-  pink:  { wrap: "border-pink-100 bg-pink-50",  text: "text-pink-600",  badge: "bg-pink-100 text-pink-700" },
+  red:   { wrap: "border-red-100 bg-red-50",    text: "text-red-600",   badge: "bg-red-100 text-red-700" },
+  pink:  { wrap: "border-pink-100 bg-pink-50",   text: "text-pink-600",  badge: "bg-pink-100 text-pink-700" },
   amber: { wrap: "border-amber-100 bg-amber-50", text: "text-amber-600", badge: "bg-amber-100 text-amber-700" },
-  blue:  { wrap: "border-blue-100 bg-blue-50",  text: "text-blue-600",  badge: "bg-blue-100 text-blue-700" },
+  blue:  { wrap: "border-blue-100 bg-blue-50",   text: "text-blue-600",  badge: "bg-blue-100 text-blue-700" },
 };
-
 
 // ─── 공통 컴포넌트 ─────────────────────────────────────────────────────────
 function DrugImage({ drug, imageUrl, size = "md" }) {
@@ -22,7 +21,6 @@ function DrugImage({ drug, imageUrl, size = "md" }) {
   const prevUrl = useRef("");
   const sz = size === "sm" ? "w-12 h-12 text-2xl" : "w-24 h-24 text-5xl";
 
-  // imageUrl이 바뀌면 실패 상태 초기화
   if (imageUrl && imageUrl !== prevUrl.current) {
     prevUrl.current = imageUrl;
     if (failed) setFailed(false);
@@ -45,7 +43,7 @@ function DrugImage({ drug, imageUrl, size = "md" }) {
   );
 }
 
-function DrugInfoCard({ drug, imageUrl, classNoName, onClear }) {
+function DrugInfoCard({ drug, imageUrl, classNoName, onClear, onBookmark, isBookmarked }) {
   const typeLabel = classNoName || drug?.ETC_OTC_CODE || null;
   return (
     <div className="flex items-start gap-4 p-4 bg-violet-50 rounded-2xl border border-violet-200">
@@ -60,8 +58,21 @@ function DrugInfoCard({ drug, imageUrl, classNoName, onClear }) {
           </span>
         )}
       </div>
-      {onClear && (
-        <button onClick={onClear} className="text-gray-400 hover:text-gray-600 text-xl shrink-0 mt-0.5">×</button>
+      {(onBookmark || onClear) && (
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          {onBookmark && (
+            <button
+              onClick={onBookmark}
+              title={isBookmarked ? "나의 약에서 제거" : "나의 약에 추가"}
+              className={`text-xl leading-none transition-colors ${isBookmarked ? "text-violet-500" : "text-gray-300 hover:text-violet-400"}`}
+            >
+              {isBookmarked ? "★" : "☆"}
+            </button>
+          )}
+          {onClear && (
+            <button onClick={onClear} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          )}
+        </div>
       )}
     </div>
   );
@@ -108,6 +119,19 @@ function WarningItem({ item, color }) {
   );
 }
 
+function Spinner({ label }) {
+  return (
+    <div className="text-center py-6">
+      <div className="flex justify-center gap-1.5 mb-2">
+        {[0, 150, 300].map((d) => (
+          <span key={d} className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: `${d}ms` }} />
+        ))}
+      </div>
+      <p className="text-sm text-gray-500">{label}</p>
+    </div>
+  );
+}
+
 function useDebounce(query, delay = 350) {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -128,8 +152,41 @@ function useDebounce(query, delay = 350) {
   return { results, loading, clear: () => setResults([]) };
 }
 
+// ─── 나의 약 훅 ────────────────────────────────────────────────────────────
+function useMyDrugs() {
+  const [myDrugs, setMyDrugs] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("myDrugs") || "[]"); }
+    catch { return []; }
+  });
+
+  function toggle(drug) {
+    setMyDrugs(prev => {
+      const exists = prev.some(d => d.ITEM_SEQ === drug.ITEM_SEQ);
+      const next = exists
+        ? prev.filter(d => d.ITEM_SEQ !== drug.ITEM_SEQ)
+        : [...prev, drug].slice(0, 10);
+      localStorage.setItem("myDrugs", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function remove(drug) {
+    setMyDrugs(prev => {
+      const next = prev.filter(d => d.ITEM_SEQ !== drug.ITEM_SEQ);
+      localStorage.setItem("myDrugs", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function has(drug) {
+    return myDrugs.some(d => d.ITEM_SEQ === drug.ITEM_SEQ);
+  }
+
+  return { myDrugs, toggle, remove, has };
+}
+
 // ─── 페이지 1: 약품 검색 ────────────────────────────────────────────────────
-function SearchPage() {
+function SearchPage({ myDrugsHook }) {
   const [query, setQuery] = useState("");
   const [drug, setDrug] = useState(null);
   const [warnings, setWarnings] = useState(null);
@@ -140,25 +197,25 @@ function SearchPage() {
   const [activeTab, setActiveTab] = useState("interaction");
 
   const { results, loading, clear } = useDebounce(drug ? "" : query);
+  const { myDrugs, toggle, remove, has } = myDrugsHook;
 
   async function handleSelect(d) {
     setDrug(d);
     setQuery(d.ITEM_NAME);
     setWarnings(null);
     setImageUrl("");
+    setClassNoName("");
     setActiveTab("interaction");
     clear();
 
     setLoadingWarn(true);
     const t = setTimeout(() => setSlowServer(true), 3000);
 
-    // 이미지·구분 먼저 빠르게 (경고 탭 로딩과 병렬)
     getDrugImage(d.ITEM_NAME).then(img => {
       setImageUrl(img.imageUrl || "");
       setClassNoName(img.classNoName || "");
     }).catch(() => {});
 
-    // 경고 탭은 별도로 기다림
     try {
       const data = await getAllWarnings(d.ITEM_NAME);
       setWarnings(data);
@@ -207,17 +264,27 @@ function SearchPage() {
       {/* 약품 상세 + 금기 정보 */}
       {drug && (
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <DrugInfoCard drug={drug} imageUrl={imageUrl} classNoName={classNoName} onClear={handleClear} />
+          <DrugInfoCard
+            drug={drug}
+            imageUrl={imageUrl}
+            classNoName={classNoName}
+            onClear={handleClear}
+            onBookmark={() => toggle(drug)}
+            isBookmarked={has(drug)}
+          />
+
+          {/* 효능·효과 */}
+          {warnings?.efficacy && (
+            <div className="mt-3 p-3 bg-gray-50 rounded-xl border border-gray-100">
+              <p className="text-xs font-semibold text-gray-500 mb-1">효능·효과</p>
+              <p className="text-xs text-gray-600 break-keep leading-relaxed">{warnings.efficacy}</p>
+            </div>
+          )}
 
           {loadingWarn && (
-            <div className="text-center py-8">
-              <div className="flex justify-center gap-1.5 mb-2">
-                {[0, 150, 300].map((d) => (
-                  <span key={d} className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: `${d}ms` }} />
-                ))}
-              </div>
-              <p className="text-sm text-gray-500">금기 정보 불러오는 중…</p>
-              {slowServer && <p className="text-xs text-gray-400 mt-1">서버 시작 중입니다. 최대 60초 소요될 수 있어요.</p>}
+            <div className="mt-2">
+              <Spinner label="금기 정보 불러오는 중…" />
+              {slowServer && <p className="text-xs text-gray-400 text-center -mt-3">서버 시작 중입니다. 최대 60초 소요될 수 있어요.</p>}
             </div>
           )}
 
@@ -257,26 +324,70 @@ function SearchPage() {
           )}
         </div>
       )}
+
+      {/* 나의 약 목록 */}
+      {myDrugs.length > 0 && (
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+          <p className="text-xs font-semibold text-violet-600 mb-3 uppercase tracking-wide">★ 나의 약 목록</p>
+          <div className="space-y-2">
+            {myDrugs.map((d, i) => (
+              <div
+                key={d.ITEM_SEQ || i}
+                className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50 transition-all"
+              >
+                <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-base shrink-0">💊</div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-700 text-sm break-keep">{d.ITEM_NAME}</p>
+                  <p className="text-xs text-gray-400">{d.ENTP_NAME}</p>
+                </div>
+                <button
+                  onClick={() => handleSelect(d)}
+                  className="text-xs text-violet-500 hover:text-violet-700 font-medium px-2 py-1 rounded-lg hover:bg-violet-100 transition-colors shrink-0"
+                >
+                  조회
+                </button>
+                <button
+                  onClick={() => remove(d)}
+                  className="text-gray-300 hover:text-red-400 text-xl leading-none transition-colors shrink-0"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ─── 페이지 2: 병용금기 확인 ─────────────────────────────────────────────────
-function InteractionPage() {
+function InteractionPage({ myDrugsHook }) {
   const [query1, setQuery1] = useState("");
   const [drug1, setDrug1] = useState(null);
+  const [image1, setImage1] = useState("");
   const [query2, setQuery2] = useState("");
   const [drug2, setDrug2] = useState(null);
+  const [image2, setImage2] = useState("");
   const [result, setResult] = useState(null);
   const [checking, setChecking] = useState(false);
 
   const s1 = useDebounce(drug1 ? "" : query1);
   const s2 = useDebounce(drug2 ? "" : query2);
+  const { myDrugs } = myDrugsHook;
 
-  function selectDrug1(d) { setDrug1(d); setQuery1(d.ITEM_NAME); s1.clear(); setResult(null); }
-  function selectDrug2(d) { setDrug2(d); setQuery2(d.ITEM_NAME); s2.clear(); setResult(null); }
-  function clearDrug1() { setDrug1(null); setQuery1(""); setResult(null); s1.clear(); }
-  function clearDrug2() { setDrug2(null); setQuery2(""); setResult(null); s2.clear(); }
+  function selectDrug1(d) {
+    setDrug1(d); setQuery1(d.ITEM_NAME); s1.clear(); setResult(null);
+    setImage1("");
+    getDrugImage(d.ITEM_NAME).then(img => setImage1(img.imageUrl || "")).catch(() => {});
+  }
+  function selectDrug2(d) {
+    setDrug2(d); setQuery2(d.ITEM_NAME); s2.clear(); setResult(null);
+    setImage2("");
+    getDrugImage(d.ITEM_NAME).then(img => setImage2(img.imageUrl || "")).catch(() => {});
+  }
+  function clearDrug1() { setDrug1(null); setQuery1(""); setResult(null); s1.clear(); setImage1(""); }
+  function clearDrug2() { setDrug2(null); setQuery2(""); setResult(null); s2.clear(); setImage2(""); }
 
   async function handleCheck() {
     if (!drug1 || !drug2) return;
@@ -289,18 +400,19 @@ function InteractionPage() {
     finally { setChecking(false); }
   }
 
+  const myDrugsForDrug2 = myDrugs.filter(d => d.ITEM_SEQ !== drug1?.ITEM_SEQ);
+
   return (
     <div className="space-y-4">
-      {/* 약품 선택 */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
         <p className="text-xs font-semibold text-violet-600 mb-4 uppercase tracking-wide">비교할 두 약품을 선택하세요</p>
 
         <div className="space-y-4">
-          {/* Drug 1 */}
+          {/* 약품 1 */}
           <div>
             <p className="text-xs text-gray-500 mb-1.5 font-medium">약품 1</p>
             {drug1 ? (
-              <DrugInfoCard drug={drug1} onClear={clearDrug1} />
+              <DrugInfoCard drug={drug1} imageUrl={image1} onClear={clearDrug1} />
             ) : (
               <>
                 <input
@@ -317,6 +429,22 @@ function InteractionPage() {
                     ))}
                   </div>
                 )}
+                {myDrugs.length > 0 && (
+                  <div className="mt-2.5">
+                    <p className="text-xs text-gray-400 mb-1.5">나의 약에서 선택</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {myDrugs.map((d, i) => (
+                        <button
+                          key={d.ITEM_SEQ || i}
+                          onClick={() => selectDrug1(d)}
+                          className="text-xs px-2.5 py-1.5 rounded-full border border-violet-200 text-violet-600 hover:bg-violet-50 transition-colors"
+                        >
+                          {d.ITEM_NAME}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -327,11 +455,11 @@ function InteractionPage() {
             <div className="flex-1 border-t border-dashed border-gray-200" />
           </div>
 
-          {/* Drug 2 */}
+          {/* 약품 2 */}
           <div>
             <p className="text-xs text-gray-500 mb-1.5 font-medium">약품 2</p>
             {drug2 ? (
-              <DrugInfoCard drug={drug2} onClear={clearDrug2} />
+              <DrugInfoCard drug={drug2} imageUrl={image2} onClear={clearDrug2} />
             ) : (
               <>
                 <input
@@ -348,6 +476,22 @@ function InteractionPage() {
                     ))}
                   </div>
                 )}
+                {myDrugsForDrug2.length > 0 && (
+                  <div className="mt-2.5">
+                    <p className="text-xs text-gray-400 mb-1.5">나의 약에서 선택</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {myDrugsForDrug2.map((d, i) => (
+                        <button
+                          key={d.ITEM_SEQ || i}
+                          onClick={() => selectDrug2(d)}
+                          className="text-xs px-2.5 py-1.5 rounded-full border border-violet-200 text-violet-600 hover:bg-violet-50 transition-colors"
+                        >
+                          {d.ITEM_NAME}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -360,6 +504,8 @@ function InteractionPage() {
         >
           {checking ? "조회 중…" : "병용금기 확인하기"}
         </button>
+
+        {checking && <Spinner label="병용금기 정보 조회 중…" />}
       </div>
 
       {/* 결과 */}
@@ -367,33 +513,51 @@ function InteractionPage() {
         <div className={`rounded-2xl border p-5 ${
           result.is_prohibited ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"
         }`}>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-3">
             <span className="text-2xl">{result.is_prohibited ? "⚠️" : "✅"}</span>
             <p className={`font-bold text-lg ${result.is_prohibited ? "text-red-700" : "text-green-700"}`}>
               {result.is_prohibited ? "병용금기 약물입니다" : "병용금기 아님"}
             </p>
           </div>
 
-          {/* 두 약품 이미지 나란히 */}
-          <div className="flex items-center gap-3 mb-3">
-            <div className="flex items-center gap-2">
-              <DrugImage drug={drug1} size="sm" />
-              <span className="text-xs text-gray-600 break-keep font-medium">{drug1?.ITEM_NAME}</span>
+          {/* 두 약품 나란히 */}
+          <div className="flex items-center gap-3 mb-4 p-3 bg-white rounded-xl border border-gray-100">
+            <div className="flex-1 flex items-center gap-2 min-w-0">
+              <DrugImage drug={drug1} imageUrl={image1} size="sm" />
+              <p className="text-xs text-gray-700 break-keep font-medium leading-tight">{drug1?.ITEM_NAME}</p>
             </div>
-            <span className="text-gray-400 text-sm font-bold">+</span>
-            <div className="flex items-center gap-2">
-              <DrugImage drug={drug2} size="sm" />
-              <span className="text-xs text-gray-600 break-keep font-medium">{drug2?.ITEM_NAME}</span>
+            <span className={`text-xl font-bold shrink-0 ${result.is_prohibited ? "text-red-400" : "text-green-400"}`}>
+              {result.is_prohibited ? "✕" : "✓"}
+            </span>
+            <div className="flex-1 flex items-center gap-2 min-w-0">
+              <DrugImage drug={drug2} imageUrl={image2} size="sm" />
+              <p className="text-xs text-gray-700 break-keep font-medium leading-tight">{drug2?.ITEM_NAME}</p>
             </div>
           </div>
 
-          {result.message && <p className="text-xs text-gray-500">{result.message}</p>}
-          {result.is_prohibited && result.interactions?.map((item, i) => (
-            <div key={i} className="mt-2 p-3 bg-white rounded-xl border border-red-200 text-sm">
-              <p className="font-medium text-gray-700 break-keep">{item.INGR_KOR_NAME} ↔ {item.MIXTURE_INGR_KOR_NAME}</p>
-              {item.PROHBT_CONTENT && <p className="text-xs text-red-600 mt-0.5 break-keep">{item.PROHBT_CONTENT}</p>}
+          {result.message && <p className="text-xs text-gray-500 mb-2">{result.message}</p>}
+
+          {result.is_prohibited && result.interactions?.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-red-600 mb-1">금기 상세 정보</p>
+              {result.interactions.map((item, i) => (
+                <div key={i} className="p-3 bg-white rounded-xl border border-red-200">
+                  <p className="font-medium text-sm text-gray-700 break-keep">
+                    {item.INGR_KOR_NAME} ↔ {item.MIXTURE_INGR_KOR_NAME}
+                  </p>
+                  {item.PROHBT_CONTENT && (
+                    <p className="text-xs text-red-600 mt-1 break-keep">{item.PROHBT_CONTENT}</p>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          {!result.is_prohibited && (
+            <p className="text-sm text-green-600 mt-1">
+              공공 DUR 데이터 기준으로 두 약품 사이의 병용금기 정보가 없습니다.
+            </p>
+          )}
         </div>
       )}
     </div>
@@ -402,23 +566,22 @@ function InteractionPage() {
 
 // ─── 루트 ──────────────────────────────────────────────────────────────────
 const PAGES = [
-  { label: "🔍 약품 검색",      desc: "약품 정보 및 금기 조회" },
+  { label: "🔍 약품 검색",         desc: "약품 정보 및 금기 조회" },
   { label: "💊 같이 먹어도 되나요?", desc: "두 약품 병용금기 확인" },
 ];
 
 export default function App() {
   const [page, setPage] = useState(0);
+  const myDrugsHook = useMyDrugs();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-violet-50 to-indigo-50">
       <div className="max-w-xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-1">💊 스마트 메디케이션</h1>
           <p className="text-sm text-gray-500">공공 DUR API 기반 약물 금기 정보 서비스</p>
         </div>
 
-        {/* Nav */}
         <div className="flex rounded-2xl bg-white border border-gray-100 shadow-sm p-1 mb-5 gap-1">
           {PAGES.map((p, i) => (
             <button
@@ -435,8 +598,7 @@ export default function App() {
           ))}
         </div>
 
-        {/* Pages */}
-        {page === 0 ? <SearchPage /> : <InteractionPage />}
+        {page === 0 ? <SearchPage myDrugsHook={myDrugsHook} /> : <InteractionPage myDrugsHook={myDrugsHook} />}
 
         <p className="text-center text-xs text-gray-400 mt-6">
           식품의약품안전처 공공데이터 DUR API 기반
