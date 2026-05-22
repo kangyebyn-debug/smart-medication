@@ -197,7 +197,7 @@ function SearchPage({ myDrugsHook }) {
   const [activeTab, setActiveTab] = useState("interaction");
 
   const { results, loading, clear } = useDebounce(drug ? "" : query);
-  const { myDrugs, toggle, remove, has } = myDrugsHook;
+  const { toggle, has } = myDrugsHook;
 
   async function handleSelect(d) {
     setDrug(d);
@@ -325,38 +325,6 @@ function SearchPage({ myDrugsHook }) {
         </div>
       )}
 
-      {/* 나의 약 목록 */}
-      {myDrugs.length > 0 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <p className="text-xs font-semibold text-violet-600 mb-3 uppercase tracking-wide">★ 나의 약 목록</p>
-          <div className="space-y-2">
-            {myDrugs.map((d, i) => (
-              <div
-                key={d.ITEM_SEQ || i}
-                className="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50 transition-all"
-              >
-                <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-base shrink-0">💊</div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-700 text-sm break-keep">{d.ITEM_NAME}</p>
-                  <p className="text-xs text-gray-400">{d.ENTP_NAME}</p>
-                </div>
-                <button
-                  onClick={() => handleSelect(d)}
-                  className="text-xs text-violet-500 hover:text-violet-700 font-medium px-2 py-1 rounded-lg hover:bg-violet-100 transition-colors shrink-0"
-                >
-                  조회
-                </button>
-                <button
-                  onClick={() => remove(d)}
-                  className="text-gray-300 hover:text-red-400 text-xl leading-none transition-colors shrink-0"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -564,10 +532,89 @@ function InteractionPage({ myDrugsHook }) {
   );
 }
 
+// ─── 페이지 3: 나의 약 목록 ──────────────────────────────────────────────────
+function MyDrugsPage({ myDrugsHook, onGoSearch, onGoInteraction }) {
+  const { myDrugs, remove } = myDrugsHook;
+
+  if (myDrugs.length === 0) {
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+        <p className="text-4xl mb-3">💊</p>
+        <p className="font-semibold text-gray-700 mb-1">저장된 약이 없습니다</p>
+        <p className="text-sm text-gray-400 mb-5">약품 검색 탭에서 별표(★)를 눌러 복용 중인 약을 저장하세요.</p>
+        <button
+          onClick={onGoSearch}
+          className="text-sm px-4 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors"
+        >
+          약품 검색하러 가기
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide">
+            ★ 복용 중인 약 ({myDrugs.length}/10)
+          </p>
+          <button
+            onClick={onGoInteraction}
+            className="text-xs text-violet-500 hover:text-violet-700 font-medium px-3 py-1.5 rounded-lg border border-violet-200 hover:bg-violet-50 transition-colors"
+          >
+            병용금기 확인 →
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {myDrugs.map((d, i) => (
+            <div
+              key={d.ITEM_SEQ || i}
+              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50 transition-all"
+            >
+              <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-xl shrink-0">💊</div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 text-sm break-keep">{d.ITEM_NAME}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{d.ENTP_NAME}</p>
+                <p className="text-xs text-gray-400 break-keep line-clamp-1">{d.MATERIAL_NAME}</p>
+              </div>
+              <button
+                onClick={() => remove(d)}
+                className="text-gray-300 hover:text-red-400 text-xl leading-none transition-colors shrink-0"
+                title="목록에서 제거"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 내 약 조합 안내 */}
+      {myDrugs.length >= 2 && (
+        <div className="bg-amber-50 rounded-2xl border border-amber-200 p-4">
+          <p className="text-xs font-semibold text-amber-700 mb-1">💡 복용 중인 약이 여러 개인가요?</p>
+          <p className="text-xs text-amber-600 mb-3">
+            저장된 약끼리 병용금기가 있는지 확인해보세요.
+          </p>
+          <button
+            onClick={onGoInteraction}
+            className="text-xs px-3 py-2 rounded-xl bg-amber-500 text-white hover:bg-amber-600 transition-colors font-medium"
+          >
+            같이 먹어도 되나요? 탭으로 이동
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 루트 ──────────────────────────────────────────────────────────────────
 const PAGES = [
-  { label: "🔍 약품 검색",         desc: "약품 정보 및 금기 조회" },
-  { label: "💊 같이 먹어도 되나요?", desc: "두 약품 병용금기 확인" },
+  { label: "🔍 약품 검색",         },
+  { label: "💊 병용금기 확인",      },
+  { label: "★ 나의 약",            },
 ];
 
 export default function App() {
@@ -587,18 +634,31 @@ export default function App() {
             <button
               key={i}
               onClick={() => setPage(i)}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-sm font-medium transition-all ${
+              className={`flex-1 py-2 px-2 rounded-xl text-xs font-medium transition-all ${
                 page === i
                   ? "bg-violet-600 text-white shadow-sm"
                   : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
               }`}
             >
               {p.label}
+              {i === 2 && myDrugsHook.myDrugs.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-violet-400 text-white text-xs">
+                  {myDrugsHook.myDrugs.length}
+                </span>
+              )}
             </button>
           ))}
         </div>
 
-        {page === 0 ? <SearchPage myDrugsHook={myDrugsHook} /> : <InteractionPage myDrugsHook={myDrugsHook} />}
+        {page === 0 && <SearchPage myDrugsHook={myDrugsHook} />}
+        {page === 1 && <InteractionPage myDrugsHook={myDrugsHook} />}
+        {page === 2 && (
+          <MyDrugsPage
+            myDrugsHook={myDrugsHook}
+            onGoSearch={() => setPage(0)}
+            onGoInteraction={() => setPage(1)}
+          />
+        )}
 
         <p className="text-center text-xs text-gray-400 mt-6">
           식품의약품안전처 공공데이터 DUR API 기반
