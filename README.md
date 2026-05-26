@@ -91,79 +91,17 @@ FastAPI (Render)
 
 ---
 
-## 배포 환경
+## 로컬 실행
 
-| 구분 | 플랫폼 | URL |
-|---|---|---|
-| 프론트엔드 | Vercel | https://smart-medication.vercel.app |
-| 백엔드 API | Render | https://smart-medication-api.onrender.com |
-| API 문서 (Swagger) | Render | https://smart-medication-api.onrender.com/docs |
-
-- **Vercel**: `main` 브랜치에 머지되면 자동 배포
-- **Render**: `main` 브랜치에 머지되면 자동 배포 (빌드 약 3~5분 소요)
-- Render 무료 티어는 15분 무요청 시 슬립 → 첫 요청 최대 60초 대기
-
----
-
-## 로컬 개발
-
-### 재부팅 후 빠른 시작 (설치가 이미 된 경우)
-
-터미널 두 개를 열고 각각 실행합니다.
-
-**터미널 1 — 백엔드**
 ```bash
-cd d:/Project_KYB/smart-medication/backend
-source .venv/Scripts/activate
-uvicorn app.main:app --reload
-```
-→ http://localhost:8000 (Swagger: http://localhost:8000/docs)
+# 백엔드 (터미널 1)
+cd backend && source .venv/Scripts/activate && uvicorn app.main:app --reload
 
-**터미널 2 — 프론트엔드**
-```bash
-cd d:/Project_KYB/smart-medication/frontend
-npm run dev
-```
-→ http://localhost:5173
-
-> 로컬 프론트엔드가 로컬 백엔드를 바라보려면 `frontend/.env.local` 파일에 아래 내용이 있어야 합니다.
-> ```
-> VITE_API_URL=http://localhost:8000
-> ```
-> 이 파일이 없으면 프론트엔드는 배포된 Render 백엔드로 요청을 보냅니다.
-
----
-
-### 처음 설치하는 경우
-
-**백엔드**
-```bash
-cd backend
-python -m venv .venv
-source .venv/Scripts/activate   # Windows Git Bash
-pip install -r requirements.txt
-cp .env.example .env             # .env에 SERVICE_KEY 입력
-uvicorn app.main:app --reload
+# 프론트엔드 (터미널 2)
+cd frontend && npm run dev
 ```
 
-**프론트엔드**
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### 환경 변수
-
-`backend/.env` (git에 포함되지 않음 — 직접 생성)
-```
-SERVICE_KEY=공공데이터포털_발급키
-```
-
-`frontend/.env.local` (git에 포함되지 않음 — 로컬 개발 시만)
-```
-VITE_API_URL=http://localhost:8000
-```
+초기 설치, 환경변수 설정, 배포 절차 전체는 **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** 를 참고하세요.
 
 ---
 
