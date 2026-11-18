@@ -1,30 +1,24 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { checkInteraction } from "../api";
 import Spinner from "../components/Spinner";
+import Icon from "../components/Icon";
 
 export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
   const { myDrugs, remove } = myDrugsHook;
-  const [bulkResults, setBulkResults] = useState([]);
-  const [bulkChecking, setBulkChecking] = useState(false);
-  const [checked, setChecked] = useState(false);
-
-  const prevCountRef = useRef(myDrugs.length);
-  if (myDrugs.length !== prevCountRef.current) {
-    prevCountRef.current = myDrugs.length;
-    if (bulkResults.length > 0) {
-      setBulkResults([]);
-      setChecked(false);
-    }
-  }
+  const [bulkCheck, setBulkCheck] = useState({ drugs: null, status: "idle", results: [] });
+  const currentCheck = bulkCheck.drugs === myDrugs ? bulkCheck : null;
+  const bulkResults = currentCheck?.results || [];
+  const bulkChecking = currentCheck?.status === "loading";
+  const checked = currentCheck?.status === "done";
 
   async function handleBulkCheck() {
-    setBulkChecking(true);
-    setBulkResults([]);
+    const checkedDrugs = myDrugs;
+    setBulkCheck({ drugs: checkedDrugs, status: "loading", results: [] });
 
     const pairs = [];
-    for (let i = 0; i < myDrugs.length; i++) {
-      for (let j = i + 1; j < myDrugs.length; j++) {
-        pairs.push([myDrugs[i], myDrugs[j]]);
+    for (let i = 0; i < checkedDrugs.length; i++) {
+      for (let j = i + 1; j < checkedDrugs.length; j++) {
+        pairs.push([checkedDrugs[i], checkedDrugs[j]]);
       }
     }
 
@@ -32,63 +26,80 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
       pairs.map(([d1, d2]) => checkInteraction(d1.ITEM_NAME, d2.ITEM_NAME))
     );
 
-    const results = pairs.map(([d1, d2], i) => ({
-      drug1: d1,
-      drug2: d2,
-      ...(settled[i].status === "fulfilled"
-        ? settled[i].value
-        : { is_prohibited: false, message: "조회 실패" }),
-    }));
+    const results = pairs.map(([d1, d2], i) => {
+      const result = settled[i];
+      const valid = result.status === "fulfilled" && typeof result.value?.is_prohibited === "boolean";
+      return {
+        ...(valid ? result.value : {}),
+        drug1: d1,
+        drug2: d2,
+        checkFailed: !valid,
+      };
+    });
 
     results.sort((a, b) => (b.is_prohibited ? 1 : 0) - (a.is_prohibited ? 1 : 0));
-    setBulkResults(results);
-    setBulkChecking(false);
-    setChecked(true);
+    setBulkCheck(current =>
+      current.drugs === checkedDrugs && current.status === "loading"
+        ? { drugs: checkedDrugs, status: "done", results }
+        : current
+    );
   }
+
+  const pageHeader = (
+    <header>
+      <p className="text-xs font-bold tracking-[0.16em] text-brand">복용 목록</p>
+      <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">나의 약</h1>
+      <p className="mt-2 break-keep text-base leading-relaxed text-muted">등록한 약은 이 브라우저에만 저장됩니다. 계정 동기화는 아직 제공되지 않습니다.</p>
+    </header>
+  );
 
   if (myDrugs.length === 0) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
-        <p className="text-4xl mb-3">💊</p>
-        <p className="font-semibold text-gray-700 mb-1">저장된 약이 없습니다</p>
-        <p className="text-sm text-gray-400 mb-5">약품 검색 탭에서 별표(★)를 눌러 복용 중인 약을 저장하세요.</p>
-        <button
-          onClick={onGoSearch}
-          className="text-sm px-4 py-2 rounded-xl bg-violet-600 text-white hover:bg-violet-700 transition-colors"
-        >
-          약품 검색하러 가기
-        </button>
-      </div>
+      <section className="mx-auto w-full max-w-[1200px] space-y-6">
+        {pageHeader}
+        <div className="rounded-2xl border border-line bg-white p-8 text-center sm:p-12">
+          <span aria-hidden="true" className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D8EFE1] bg-mint text-brand"><Icon name="bookmark" size={26} /></span>
+          <h2 className="mt-5 text-lg font-bold text-ink">저장된 약이 없습니다</h2>
+          <p className="mt-2 break-keep text-base leading-relaxed text-muted">약품을 검색한 뒤 ‘나의 약에 추가’를 누르면 이 브라우저에 저장됩니다.</p>
+          <button type="button" onClick={onGoSearch} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
+            <Icon name="search" size={17} />약품 검색하기
+          </button>
+        </div>
+      </section>
     );
   }
 
   const prohibitedCount = bulkResults.filter(r => r.is_prohibited).length;
+  const failedCount = bulkResults.filter(r => r.checkFailed).length;
   const pairCount = (myDrugs.length * (myDrugs.length - 1)) / 2;
 
   return (
-    <div className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-        <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide mb-3">
-          ★ 복용 중인 약 ({myDrugs.length}/10)
-        </p>
-        <div className="space-y-2">
+    <section className="mx-auto w-full max-w-[1200px] space-y-6">
+      {pageHeader}
+      <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_-24px_rgba(27,58,75,0.4)] sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 text-base font-bold text-ink"><Icon name="bookmark" size={19} className="text-brand" />이 브라우저에 저장한 약</h2>
+          <span className="rounded-full border border-[#D8EFE1] bg-mint px-3 py-1 text-xs font-bold text-brand-dark">{myDrugs.length} / 10개</span>
+        </div>
+        <div className="mt-5 grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))" }}>
           {myDrugs.map((d, i) => (
             <div
               key={d.ITEM_SEQ || i}
-              className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50 transition-all"
+              className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-surface p-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center text-xl shrink-0">💊</div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-800 text-sm break-keep">{d.ITEM_NAME}</p>
-                <p className="text-xs text-gray-500 mt-0.5">{d.ENTP_NAME}</p>
-                <p className="text-xs text-gray-400 break-keep line-clamp-1">{d.MATERIAL_NAME}</p>
+              <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D8EFE1] bg-mint text-brand"><Icon name="pill" size={19} /></span>
+              <div className="min-w-0 flex-1">
+                <p className="break-keep break-words text-base font-semibold text-ink">{d.ITEM_NAME}</p>
+                <p className="mt-0.5 break-keep break-words text-sm text-muted">{d.ENTP_NAME}</p>
+                {d.MATERIAL_NAME && <p className="mt-0.5 truncate text-sm text-muted">{d.MATERIAL_NAME}</p>}
               </div>
               <button
+                type="button"
                 onClick={() => remove(d)}
-                className="text-gray-300 hover:text-red-400 text-xl leading-none transition-colors shrink-0"
-                title="목록에서 제거"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-muted transition-colors hover:border-[#EFCAC7] hover:text-[#B3443C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                aria-label={`${d.ITEM_NAME} 목록에서 제거`}
               >
-                ×
+                <Icon name="close" size={17} />
               </button>
             </div>
           ))}
@@ -96,63 +107,78 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
       </div>
 
       {myDrugs.length >= 2 && (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-1">
-            <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide">
-              전체 병용금기 확인
-            </p>
-            <p className="text-xs text-gray-400">{pairCount}가지 조합</p>
+        <div className="rounded-2xl border border-line bg-white p-5 sm:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="flex items-center gap-2 text-base font-bold text-ink"><Icon name="compare" size={19} className="text-brand" />전체 병용금기 조회</h2>
+            <span className="text-xs font-medium text-muted">{pairCount}가지 조합</span>
           </div>
-          <p className="text-xs text-gray-500 mb-3">
-            저장된 {myDrugs.length}개 약의 모든 조합을 한 번에 확인합니다.
+          <p className="mt-2 break-keep text-base leading-relaxed text-muted">
+            저장된 {myDrugs.length}개 약의 모든 조합을 조회합니다. 항목이 없더라도 안전성이 확인된 것은 아닙니다.
           </p>
 
           <button
+            type="button"
             onClick={handleBulkCheck}
             disabled={bulkChecking}
-            className="w-full py-2.5 text-sm font-semibold rounded-xl bg-violet-600 text-white hover:bg-violet-700 disabled:opacity-40 transition-colors"
+            className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-40"
           >
+            <Icon name="compare" size={17} />
             {bulkChecking ? "확인 중…" : checked ? "다시 확인" : "전체 병용금기 확인하기"}
           </button>
 
           {bulkChecking && <Spinner label={`${pairCount}가지 조합 조회 중…`} />}
 
           {checked && !bulkChecking && (
-            <div className={`mt-3 p-3 rounded-xl text-sm font-semibold text-center ${
-              prohibitedCount > 0 ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"
+            <div className={`mt-5 flex items-start gap-3 rounded-xl border p-4 text-base font-semibold ${
+              prohibitedCount > 0
+                ? "border-[#EFCAC7] bg-[#FDF3F3] text-[#9E3831]"
+                : failedCount > 0
+                  ? "border-[#EEDFC3] bg-[#FDF8EE] text-[#815511]"
+                  : "border-line bg-surface text-ink"
             }`}>
-              {prohibitedCount > 0
-                ? `⚠️ 병용금기 ${prohibitedCount}건 발견`
-                : "✅ 병용금기 없음"}
+              <Icon name={prohibitedCount > 0 || failedCount > 0 ? "alert" : "info"} size={19} className="shrink-0" />
+              <span className="min-w-0 break-keep">
+                {failedCount > 0
+                  ? prohibitedCount > 0
+                    ? `병용금기 ${prohibitedCount}건 발견 · ${failedCount}건 조회 실패 (일부 결과 미확인)`
+                    : `${failedCount}건 조회 실패 · 전체 병용금기 여부를 확인할 수 없습니다`
+                  : prohibitedCount > 0
+                    ? `병용금기 ${prohibitedCount}건 발견`
+                    : "조회 범위에서 병용금기 항목 없음 · 안전성은 확정할 수 없습니다"}
+              </span>
             </div>
           )}
 
           {bulkResults.length > 0 && (
-            <div className="mt-3 space-y-2">
+            <div className="mt-4 space-y-2">
               {bulkResults.map((r, i) => (
                 <div
                   key={i}
-                  className={`p-3 rounded-xl border ${
-                    r.is_prohibited
-                      ? "border-red-200 bg-red-50"
-                      : "border-gray-100 bg-gray-50"
+                  className={`rounded-xl border p-4 ${
+                    r.checkFailed
+                      ? "border-[#EEDFC3] bg-[#FDF8EE]"
+                      : r.is_prohibited
+                        ? "border-[#EFCAC7] bg-[#FDF3F3]"
+                        : "border-line bg-surface"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    <span className="text-base shrink-0">{r.is_prohibited ? "⚠️" : "✅"}</span>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span aria-hidden="true" className={r.checkFailed ? "text-[#9A6A1C]" : r.is_prohibited ? "text-[#B3443C]" : "text-muted"}>
+                      <Icon name={r.checkFailed || r.is_prohibited ? "alert" : "info"} size={18} />
+                    </span>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-xs font-medium break-keep ${r.is_prohibited ? "text-red-800" : "text-gray-600"}`}>
+                      <p className="break-keep break-words text-base font-semibold text-ink">
                         {r.drug1.ITEM_NAME}
-                        <span className="mx-1 font-normal opacity-60">+</span>
+                        <span className="mx-2 font-normal text-muted">+</span>
                         {r.drug2.ITEM_NAME}
                       </p>
                     </div>
-                    <span className={`text-xs shrink-0 font-semibold ${r.is_prohibited ? "text-red-600" : "text-gray-400"}`}>
-                      {r.is_prohibited ? "금기" : "이상없음"}
+                    <span className={r.checkFailed ? "ml-auto text-base font-bold text-[#815511]" : r.is_prohibited ? "ml-auto text-base font-bold text-[#9E3831]" : "ml-auto text-base font-bold text-muted"}>
+                      {r.checkFailed ? "조회 실패" : r.is_prohibited ? "금기" : "조회 범위에 항목 없음"}
                     </span>
                   </div>
                   {r.is_prohibited && r.interactions?.map((item, j) => (
-                    <p key={j} className="text-xs text-red-600 mt-1.5 ml-6 break-keep">
+                    <p key={j} className="ml-7 mt-2 break-keep break-words text-base leading-relaxed text-[#B3443C]">
                       {item.INGR_KOR_NAME} ↔ {item.MIXTURE_INGR_KOR_NAME}
                       {item.PROHBT_CONTENT && ` — ${item.PROHBT_CONTENT}`}
                     </p>
@@ -163,6 +189,6 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
           )}
         </div>
       )}
-    </div>
+    </section>
   );
 }
