@@ -1,15 +1,23 @@
+import Icon from "./Icon";
+
 export default function SearchResultItem({ drug, onSelect }) {
   return (
     <button
+      type="button"
       onClick={() => onSelect(drug)}
-      className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-violet-400 hover:bg-violet-50 transition-all text-left"
+      className="flex w-full items-center gap-3 rounded-xl border border-line bg-white p-3 text-left transition-colors hover:border-brand hover:bg-mint/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
     >
-      <div className="w-12 h-12 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center text-2xl shrink-0">💊</div>
-      <div className="min-w-0">
-        <p className="font-semibold text-gray-800 text-sm break-keep">{drug.ITEM_NAME}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{drug.ENTP_NAME}</p>
-        <p className="text-xs text-gray-400 break-keep line-clamp-1">{drug.MATERIAL_NAME}</p>
-      </div>
+      <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#D8EFE1] bg-mint text-brand">
+        <Icon name="pill" size={21} />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block break-keep text-base font-semibold text-ink [overflow-wrap:anywhere]">{drug.ITEM_NAME}</span>
+        <span className="mt-0.5 block text-base text-muted [overflow-wrap:anywhere]">{drug.ENTP_NAME}</span>
+        {drug.MATERIAL_NAME && <span className="mt-0.5 block truncate text-base text-muted">{drug.MATERIAL_NAME}</span>}
+      </span>
+      <span aria-hidden="true" className="shrink-0 text-brand">
+        <Icon name="chevronRight" size={18} />
+      </span>
     </button>
   );
 }
