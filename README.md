@@ -1,9 +1,11 @@
 # 스마트 메디케이션
 
-약물 병용금기 조회 웹 서비스 — 식품의약품안전처 공공 DUR API 기반
+약품 상세정보·병용금기 조회 웹 서비스 — 식품의약품안전처 공공 API 기반
 
 **[라이브 데모](https://smart-medication.vercel.app)** · **[API 문서](https://smart-medication-api.onrender.com/docs)**
 
+> **현재 코드 기준 (2026.11.18):** 로컬 작업 트리에 Phase 1 약 상세정보 보강과 Phase 1-1 UI 리디자인이 적용되어 있습니다. 위 라이브 데모와 API 문서에 이번 변경이 배포되었는지는 아직 확인하지 않았습니다. 아래 기능 설명은 로컬 코드를 기준으로 합니다.
+>
 > ⚠️ 백엔드가 Render 무료 티어에서 동작합니다. 첫 요청은 콜드 스타트로 최대 60초 소요될 수 있습니다.
 
 ---
@@ -18,18 +20,22 @@
 
 ## 주요 기능
 
-**약품 검색 탭**
+첫 화면은 검색 중심 랜딩입니다. 검색어를 입력하면 약품 검색 화면으로 이어지고, 기능 카드를 누르면 앱의 해당 화면으로 이동합니다. 데스크톱에서는 상시 사이드바, 좁은 화면에서는 상단 메뉴로 이동하며, 앱 홈에서도 검색·병용금기 확인·나의 약으로 이동할 수 있습니다.
+
+**약품 검색 화면**
 - 상표명 입력 시 350ms 디바운스 검색 (불필요한 API 요청 최소화)
+- 검색 실패는 정상적인 검색 결과 0건과 구분해 알리고, 같은 검색어로 다시 시도할 수 있음
 - 약품 선택 즉시 포장 이미지·전문/일반의약품 구분 표시 (금기 정보 로딩과 병렬)
-- 효능·효과, 병용금기/임부금기/노인주의/연령금기 4종 금기 탭
+- 효능·효과와 용법·용량 일반 안내, 병용금기/임부금기/노인주의/연령금기 4종 금기 탭
+- e약은요에 상세정보가 없는 품목은 공식 의약품 제품 허가정보 API에서 같은 품목코드의 효능·용법을 조회
 
-**병용금기 확인 탭**
+**병용금기 확인 화면**
 - 두 약품을 각각 검색하거나 '나의 약'에서 바로 선택
-- 병용금기 여부와 금기 성분 상세 정보 표시
+- 조회된 범위의 병용금기 항목과 금기 성분 상세 정보 표시 (항목이 없어도 복용 안전성을 확정하지 않음)
 
-**나의 약 탭**
-- `localStorage` 기반 복용 중인 약 저장 (최대 10개, 브라우저 재시작 후에도 유지)
-- 2개 이상 저장 시 병용금기 확인 탭으로 바로 이동 안내
+**나의 약 화면**
+- `localStorage` 기반 복용 중인 약 저장 (최대 10개, 이 브라우저에서만 유지하며 계정 동기화는 아직 없음)
+- 2개 이상 저장 시 모든 두 약 조합을 일괄 조회하고, 조회 실패는 미확인으로 구분
 
 ---
 
@@ -39,7 +45,7 @@
 |---|---|
 | 프론트엔드 | React 19, Vite, Tailwind CSS v4 |
 | 백엔드 | Python 3.11, FastAPI, httpx |
-| 데이터 | 식품의약품안전처 DUR 공공 API (XML), e약은요 API (JSON) |
+| 데이터 | 식품의약품안전처 DUR 공공 API (XML), e약은요·의약품 제품 허가정보 API (JSON) |
 | 배포 | Vercel (프론트) · Render (백엔드) |
 
 httpx를 쓴 이유는 Python의 `requests`가 동기 라이브러리라 FastAPI의 `async def`와 같이 쓰면 이벤트 루프를 블로킹하기 때문이다. `asyncio.gather`로 4개의 API를 병렬 호출하려면 비동기 HTTP 클라이언트가 필수였다.
@@ -62,7 +68,7 @@ httpx를 쓴 이유는 Python의 `requests`가 동기 라이브러리라 FastAPI
 
 ### 공공 API의 XML/JSON 혼재
 
-DUR 계열 API는 XML만 지원하고, e약은요 API는 JSON을 지원한다. XML 파싱은 Python 표준 라이브러리 `xml.etree.ElementTree`로 처리했고, `resultCode == "00"` 체크와 `items` 추출을 공통 함수 하나로 묶어 각 API 함수가 항상 `list`를 반환하도록 통일했다. `asyncio.gather` 중 하나가 실패해도 나머지 결과를 그대로 쓸 수 있도록 `_safe()` 래퍼도 붙였다.
+DUR 계열 API는 XML, e약은요·의약품 제품 허가정보 API는 JSON을 사용한다. XML 파싱은 Python 표준 라이브러리 `xml.etree.ElementTree`로 처리한다. DUR 오류 응답은 유효한 빈 조회와 구별하고, `/drugs/warnings`의 4종 금기 조회는 일부가 실패해도 각 상태를 `warningStatus`로 반환한다. 제품 허가정보 안의 문서형 XML은 문단 텍스트만 추출해 표시한다.
 
 ### 전문/일반의약품 구분 필드 혼동
 
@@ -81,7 +87,8 @@ React SPA (Vercel)
 │                       ├───► DUR 임부금기 API (XML)  │ asyncio.gather
 │                       ├───► DUR 노인주의 API (XML)  │
 │                       ├───► DUR 연령금기 API (XML)  │
-│                       └───► e약은요 API (JSON)      ┘
+│                       ├───► e약은요 API (JSON)      ┘
+│                       └───► 제품 허가정보 API (상세정보가 없을 때만)
 └─ GET /drugs/check    ─────► DUR 병용금기 API (XML)
 
 FastAPI (Render)
@@ -100,7 +107,7 @@ cd backend
 python -m venv .venv
 source .venv/Scripts/activate   # Windows Git Bash
 pip install -r requirements.txt
-cp .env.example .env             # .env에 SERVICE_KEY 입력
+test -f .env || cp .env.example .env  # .env가 없을 때만 복사하고 SERVICE_KEY 입력
 uvicorn app.main:app --reload
 # http://localhost:8000/docs 에서 API 확인
 ```
@@ -111,7 +118,7 @@ uvicorn app.main:app --reload
 cd frontend
 npm install
 npm run dev
-# 백엔드를 로컬에서 띄운 경우 .env.local에 VITE_API_URL=http://localhost:8000 추가
+# 기본 API 주소는 http://localhost:8000, 다른 주소를 쓰면 .env.local에 VITE_API_URL 설정
 ```
 
 ### 환경 변수
@@ -133,25 +140,23 @@ VITE_API_URL=http://localhost:8000
 | 메서드 | 경로 | 설명 |
 |---|---|---|
 | GET | `/drugs/search?name={약품명}` | 상표명으로 DUR 품목 검색 |
-| GET | `/drugs/image?name={약품명}` | 이미지 URL, 전문/일반 구분 |
-| GET | `/drugs/warnings?name={약품명}` | 4종 금기 정보 + 효능 |
+| GET | `/drugs/image?name={약품명}&item_seq={품목코드}` | 이미지 URL, 전문/일반 구분 (`item_seq` 선택) |
+| GET | `/drugs/warnings?name={약품명}&item_seq={품목코드}` | 4종 금기 정보 + 효능·용법 (`item_seq` 선택) |
 | GET | `/drugs/check?drug1={약품명}&drug2={약품명}` | 두 약품 병용금기 확인 |
 
-자세한 요청/응답 스펙은 [Swagger UI](https://smart-medication-api.onrender.com/docs)에서 직접 확인할 수 있다.
+현재 로컬 코드의 요청/응답 스펙은 백엔드를 실행한 뒤 `http://localhost:8000/docs`에서 확인할 수 있다. 공개 [Swagger UI](https://smart-medication-api.onrender.com/docs)는 배포 상태를 확인한 뒤 비교한다.
 
 ---
 
 ## 향후 계획
 
-- **처방전 OCR**: 처방전 사진을 찍으면 약품명을 자동으로 추출해 '나의 약' 목록에 등록 (Naver CLOVA OCR 활용)
-- **HIRA 마이헬스웨이 연동**: 공동인증서/PASS 인증 기반으로 실제 처방 이력 조회
-- **약-음식 상호작용**: 자몽, 우유, 알코올 등과의 주의 조합 안내
+다음 단계는 Supabase Auth와 나의 약 계정 동기화입니다. 이후 등록 약 기준 복약 질문 AI, 전체 공공 의약품 대상 RAG, 처방전 OCR 순서로 진행합니다. 자세한 순서는 [기획서](docs/01_기획서_v3.md) 10장을 참고하세요. HIRA 투약이력 연동은 기관 등록 가능 여부를 확인할 때까지 장기 과제로 보류합니다.
 
 ---
 
 ## 데이터 출처
 
-모든 약물 정보는 [공공데이터포털](https://www.data.go.kr) 식품의약품안전처 DUR API를 통해 실시간 조회합니다. 데이터를 수집하거나 별도 저장하지 않습니다.
+약품 검색과 금기 정보는 [공공데이터포털](https://www.data.go.kr)의 식품의약품안전처 DUR API에서 실시간 조회합니다. 상세정보는 e약은요 및 의약품 제품 허가정보 API에서 가져옵니다. 현재 약품 데이터를 별도 DB에 저장하지 않습니다.
 
 ---
 
