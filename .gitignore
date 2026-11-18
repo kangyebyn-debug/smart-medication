@@ -205,3 +205,7 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Codex 전용 로컬 개발 지침 (git 비추적)
+AGENTS.md
+AGENTS.override.md
