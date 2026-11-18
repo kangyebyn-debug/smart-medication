@@ -1,12 +1,12 @@
 export default function Spinner({ label }) {
   return (
-    <div className="text-center py-6">
-      <div className="flex justify-center gap-1.5 mb-2">
+    <div role="status" className="py-6 text-center">
+      <div aria-hidden="true" className="mb-3 flex justify-center gap-1.5">
         {[0, 150, 300].map((d) => (
-          <span key={d} className="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: `${d}ms` }} />
+          <span key={d} className="h-2 w-2 rounded-full bg-brand motion-safe:animate-pulse" style={{ animationDelay: `${d}ms` }} />
         ))}
       </div>
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="break-keep text-base text-muted">{label}</p>
     </div>
   );
 }

@@ -1,33 +1,44 @@
 import DrugImage from "./DrugImage";
+import Icon from "./Icon";
 
 export default function DrugInfoCard({ drug, imageUrl, classNoName, onClear, onBookmark, isBookmarked }) {
   const typeLabel = classNoName || drug?.ETC_OTC_CODE || null;
   return (
-    <div className="flex items-start gap-4 p-4 bg-violet-50 rounded-2xl border border-violet-200">
+    <div className="flex flex-wrap items-start gap-5 rounded-2xl border border-line bg-surface p-5 sm:flex-nowrap sm:p-6">
       <DrugImage drug={drug} imageUrl={imageUrl} size="md" />
-      <div className="flex-1 min-w-0">
-        <p className="font-bold text-gray-800 break-keep leading-tight">{drug.ITEM_NAME}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{drug.ENTP_NAME}</p>
-        <p className="text-xs text-gray-400 mt-0.5 break-keep">{drug.MATERIAL_NAME}</p>
+      <div className="min-w-[10rem] flex-1">
+        <p className="text-xs font-bold tracking-[0.14em] text-brand">선택한 의약품</p>
+        <h2 className="mt-1.5 break-keep text-lg font-bold leading-snug text-ink [overflow-wrap:anywhere] sm:text-xl">{drug.ITEM_NAME}</h2>
+        <p className="mt-1 text-base text-muted [overflow-wrap:anywhere]">{drug.ENTP_NAME}</p>
+        {drug.MATERIAL_NAME && <p className="mt-2 break-keep text-base leading-relaxed text-muted [overflow-wrap:anywhere]">{drug.MATERIAL_NAME}</p>}
         {typeLabel && (
-          <span className="mt-1.5 inline-block text-xs px-2 py-0.5 rounded-full bg-violet-200 text-violet-700">
+          <span className="mt-3 inline-flex rounded-full border border-[#D8EFE1] bg-mint px-2.5 py-1 text-xs font-semibold text-brand-dark">
             {typeLabel}
           </span>
         )}
       </div>
       {(onBookmark || onClear) && (
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
+        <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:flex-col sm:items-end">
           {onBookmark && (
             <button
+              type="button"
               onClick={onBookmark}
-              title={isBookmarked ? "나의 약에서 제거" : "나의 약에 추가"}
-              className={`text-xl leading-none transition-colors ${isBookmarked ? "text-violet-500" : "text-gray-300 hover:text-violet-400"}`}
+              aria-pressed={isBookmarked}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${isBookmarked ? "border-brand bg-mint text-brand-dark" : "border-line bg-white text-muted hover:border-brand hover:text-brand"}`}
             >
-              {isBookmarked ? "★" : "☆"}
+              <Icon name="bookmark" size={15} />
+              {isBookmarked ? "나의 약에서 제거" : "나의 약에 추가"}
             </button>
           )}
           {onClear && (
-            <button onClick={onClear} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+            <button
+              type="button"
+              onClick={onClear}
+              aria-label="선택한 약품 닫기"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-white text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              <Icon name="close" size={17} />
+            </button>
           )}
         </div>
       )}

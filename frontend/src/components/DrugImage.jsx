@@ -1,28 +1,38 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
+import Icon from "./Icon";
 
 export default function DrugImage({ drug, imageUrl, size = "md" }) {
-  const [failed, setFailed] = useState(false);
-  const prevUrl = useRef("");
-  const sz = size === "sm" ? "w-12 h-12 text-2xl" : "w-24 h-24 text-5xl";
+  const sz = size === "sm" ? "h-12 w-12" : "h-24 w-24";
+  const iconSize = size === "sm" ? 21 : 36;
 
-  if (imageUrl && imageUrl !== prevUrl.current) {
-    prevUrl.current = imageUrl;
-    if (failed) setFailed(false);
-  }
-
-  if (!imageUrl || failed) {
+  if (!imageUrl) {
     return (
-      <div className={`${sz} rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0`}>
-        💊
+      <div aria-hidden="true" className={`${sz} flex shrink-0 items-center justify-center rounded-2xl border border-[#D8EFE1] bg-mint text-brand`}>
+        <Icon name="pill" size={iconSize} />
       </div>
     );
   }
+
+  return <ImageWithFallback key={imageUrl} drug={drug} imageUrl={imageUrl} sz={sz} iconSize={iconSize} />;
+}
+
+function ImageWithFallback({ drug, imageUrl, sz, iconSize }) {
+  const [failed, setFailed] = useState(false);
+
+  if (failed) {
+    return (
+      <div aria-hidden="true" className={`${sz} flex shrink-0 items-center justify-center rounded-2xl border border-[#D8EFE1] bg-mint text-brand`}>
+        <Icon name="pill" size={iconSize} />
+      </div>
+    );
+  }
+
   return (
     <img
       src={imageUrl}
       alt={drug?.ITEM_NAME}
       onError={() => setFailed(true)}
-      className={`${sz} object-contain rounded-xl border border-gray-100 bg-white shrink-0`}
+      className={`${sz} shrink-0 rounded-2xl border border-line bg-white object-contain p-1`}
     />
   );
 }
