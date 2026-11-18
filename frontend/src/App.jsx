@@ -1,56 +1,127 @@
 import { useState } from "react";
 import { useMyDrugs } from "./hooks/useMyDrugs";
+import Icon from "./components/Icon";
+import LandingPage from "./pages/LandingPage";
+import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import InteractionPage from "./pages/InteractionPage";
 import MyDrugsPage from "./pages/MyDrugsPage";
 
-const PAGES = [
-  { label: "🔍 약품 검색" },
-  { label: "💊 병용금기 확인" },
-  { label: "★ 나의 약" },
+const NAV_ITEMS = [
+  { page: "home", label: "홈", icon: "home" },
+  { page: "search", label: "약품 검색", icon: "search" },
+  { page: "compare", label: "병용금기 확인", icon: "compare" },
+  { page: "my-drugs", label: "나의 약", icon: "bookmark" },
 ];
 
 export default function App() {
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState("landing");
+  const [initialQuery, setInitialQuery] = useState("");
+  const [searchMount, setSearchMount] = useState(0);
   const myDrugsHook = useMyDrugs();
 
+  function navigate(nextPage, query = "") {
+    if (nextPage === "search") {
+      setInitialQuery(query.trim());
+      setSearchMount((value) => value + 1);
+    }
+    setPage(nextPage);
+    window.scrollTo(0, 0);
+  }
+
+  const currentLabel = NAV_ITEMS.find((item) => item.page === page)?.label || "홈";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 to-indigo-50">
-      <div className="max-w-xl mx-auto px-4 py-8">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-1">💊 스마트 메디케이션</h1>
-          <p className="text-sm text-gray-500">공공 DUR API 기반 약물 금기 정보 서비스</p>
-        </div>
-
-        <div className="flex rounded-2xl bg-white border border-gray-100 shadow-sm p-1 mb-5 gap-1">
-          {PAGES.map((p, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i)}
-              className={`flex-1 py-2 px-2 rounded-xl text-xs font-medium transition-all ${
-                page === i
-                  ? "bg-violet-600 text-white shadow-sm"
-                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
-              }`}
-            >
-              {p.label}
-              {i === 2 && myDrugsHook.myDrugs.length > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-violet-400 text-white text-xs">
-                  {myDrugsHook.myDrugs.length}
+    <>
+      <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
+      {page === "landing" ? (
+        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} />
+      ) : (
+        <div className="app-layout bg-[#F6F8F7]">
+          <aside className="app-sidebar bg-sidebar text-white" aria-label="앱 내비게이션">
+            <div className="sidebar-brand border-b border-white/10 p-6">
+              <button
+                type="button"
+                onClick={() => navigate("landing")}
+                className="flex items-center gap-3 rounded-lg text-left"
+                aria-label="스마트 메디케이션 랜딩으로 이동"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
+                  <Icon name="pill" size={21} />
                 </span>
+                <span>
+                  <span className="block text-sm font-bold tracking-[-0.035em]">스마트 메디케이션</span>
+                  <span className="block pt-0.5 text-[11px] text-white/50">Smart Medication</span>
+                </span>
+              </button>
+            </div>
+
+            <nav className="sidebar-nav px-3 py-6" aria-label="주 메뉴">
+              <p className="sidebar-heading mb-3 px-3 text-[11px] font-bold tracking-[0.14em] text-white/40">둘러보기</p>
+              {NAV_ITEMS.map((item) => (
+                <button
+                  key={item.page}
+                  type="button"
+                  onClick={() => navigate(item.page)}
+                  aria-current={page === item.page ? "page" : undefined}
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
+                    page === item.page
+                      ? "bg-brand text-white"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                  }`}
+                >
+                  <Icon name={item.icon} size={19} className="shrink-0" />
+                  <span>{item.label}</span>
+                  {item.page === "my-drugs" && myDrugsHook.myDrugs.length > 0 && (
+                    <span className="ml-auto rounded-md bg-white/15 px-1.5 py-0.5 text-[11px]">{myDrugsHook.myDrugs.length}</span>
+                  )}
+                </button>
+              ))}
+            </nav>
+
+            <div className="sidebar-aside mt-auto px-5 pb-5">
+              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+                  <Icon name="sparkles" size={16} />
+                  복약 질문 AI
+                </div>
+                <p className="mt-2 text-xs leading-5 text-white/50">내 약을 바탕으로 질문하는 기능을 준비하고 있습니다.</p>
+                <span className="mt-3 inline-block rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/65">준비 중</span>
+              </div>
+            </div>
+            <p className="sidebar-footer border-t border-white/10 px-6 py-5 text-[11px] text-white/40">공공 의약품 정보 기반</p>
+          </aside>
+
+          <div className="app-main min-w-0">
+            <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-5 py-4 sm:px-8 lg:px-10">
+              <div className="flex items-center gap-2 text-xs font-medium text-muted">
+                <span>스마트 메디케이션</span>
+                <Icon name="chevronRight" size={14} />
+                <span className="font-semibold text-ink">{currentLabel}</span>
+              </div>
+              <span className="inline-flex items-center gap-2 text-xs text-muted">
+                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                공공 데이터 실시간 조회
+              </span>
+            </header>
+
+            <main id="main-content" className="mx-auto w-full max-w-[1280px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
+              {page === "home" && (
+                <HomePage myDrugs={myDrugsHook.myDrugs} onNavigate={navigate} />
               )}
-            </button>
-          ))}
+              {page === "search" && (
+                <SearchPage key={searchMount} myDrugsHook={myDrugsHook} initialQuery={initialQuery} />
+              )}
+              {page === "compare" && (
+                <InteractionPage myDrugsHook={myDrugsHook} />
+              )}
+              {page === "my-drugs" && (
+                <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => navigate("search")} />
+              )}
+            </main>
+          </div>
         </div>
-
-        {page === 0 && <SearchPage myDrugsHook={myDrugsHook} />}
-        {page === 1 && <InteractionPage myDrugsHook={myDrugsHook} />}
-        {page === 2 && <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => setPage(0)} />}
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          식품의약품안전처 공공데이터 DUR API 기반
-        </p>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
