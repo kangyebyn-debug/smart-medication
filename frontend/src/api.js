@@ -1,5 +1,11 @@
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
+function drugLookupQuery(name, itemSeq) {
+  const params = new URLSearchParams({ name });
+  if (itemSeq) params.set("item_seq", String(itemSeq));
+  return params.toString();
+}
+
 export async function searchDrug(name, page = 1, size = 10) {
   const res = await fetch(
     `${BASE}/drugs/search?name=${encodeURIComponent(name)}&page=${page}&size=${size}`
@@ -8,15 +14,15 @@ export async function searchDrug(name, page = 1, size = 10) {
   return res.json();
 }
 
-export async function getDrugImage(name) {
-  const res = await fetch(`${BASE}/drugs/image?name=${encodeURIComponent(name)}`);
+export async function getDrugImage(name, itemSeq) {
+  const res = await fetch(`${BASE}/drugs/image?${drugLookupQuery(name, itemSeq)}`);
   if (!res.ok) return { imageUrl: "", classNoName: "" };
   return res.json();
 }
 
-export async function getAllWarnings(name) {
+export async function getAllWarnings(name, itemSeq) {
   const res = await fetch(
-    `${BASE}/drugs/warnings?name=${encodeURIComponent(name)}`
+    `${BASE}/drugs/warnings?${drugLookupQuery(name, itemSeq)}`
   );
   if (!res.ok) throw new Error("금기 정보 조회 실패");
   return res.json();
