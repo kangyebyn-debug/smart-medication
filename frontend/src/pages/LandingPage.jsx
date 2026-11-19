@@ -46,7 +46,7 @@ const steps = [
   },
 ];
 
-export default function LandingPage({ onNavigate, onSearch }) {
+export default function LandingPage({ onNavigate, onSearch, isSignedIn }) {
   const [query, setQuery] = useState("");
   const [activeStep, setActiveStep] = useState(0);
 
@@ -79,14 +79,24 @@ export default function LandingPage({ onNavigate, onSearch }) {
             </span>
             <span className="text-base font-bold tracking-[-0.035em]">스마트 메디케이션</span>
           </div>
-          <button
-            type="button"
-            onClick={() => onNavigate("home")}
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand transition-colors hover:bg-mint sm:text-sm"
-          >
-            서비스 둘러보기
-            <Icon name="arrowRight" size={17} />
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => onNavigate("home")}
+              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand transition-colors hover:bg-mint sm:text-sm"
+            >
+              서비스 둘러보기
+              <Icon name="arrowRight" size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate("auth")}
+              className="inline-flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand sm:text-sm"
+            >
+              <Icon name="user" size={17} />
+              {isSignedIn ? "내 계정" : "로그인 · 회원가입"}
+            </button>
+          </div>
         </header>
       </div>
 

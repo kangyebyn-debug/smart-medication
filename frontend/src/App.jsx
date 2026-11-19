@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useMyDrugs } from "./hooks/useMyDrugs";
+import { useAuth } from "./hooks/useAuth";
 import Icon from "./components/Icon";
 import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
 import InteractionPage from "./pages/InteractionPage";
 import MyDrugsPage from "./pages/MyDrugsPage";
+import AuthPage from "./pages/AuthPage";
 
 const NAV_ITEMS = [
   { page: "home", label: "홈", icon: "home" },
@@ -18,6 +20,7 @@ export default function App() {
   const [page, setPage] = useState("landing");
   const [initialQuery, setInitialQuery] = useState("");
   const [searchMount, setSearchMount] = useState(0);
+  const auth = useAuth();
   const myDrugsHook = useMyDrugs();
 
   function navigate(nextPage, query = "") {
@@ -29,13 +32,15 @@ export default function App() {
     window.scrollTo(0, 0);
   }
 
-  const currentLabel = NAV_ITEMS.find((item) => item.page === page)?.label || "홈";
+  const authLabel = auth.session ? "내 계정" : "로그인 · 회원가입";
+  const navItems = [...NAV_ITEMS, { page: "auth", label: authLabel, icon: "user" }];
+  const currentLabel = navItems.find((item) => item.page === page)?.label || "홈";
 
   return (
     <>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       {page === "landing" ? (
-        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} />
+        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} isSignedIn={Boolean(auth.session)} />
       ) : (
         <div className="app-layout bg-[#F6F8F7]">
           <aside className="app-sidebar bg-sidebar text-white" aria-label="앱 내비게이션">
@@ -58,7 +63,7 @@ export default function App() {
 
             <nav className="sidebar-nav px-3 py-6" aria-label="주 메뉴">
               <p className="sidebar-heading mb-3 px-3 text-[11px] font-bold tracking-[0.14em] text-white/40">둘러보기</p>
-              {NAV_ITEMS.map((item) => (
+              {navItems.map((item) => (
                 <button
                   key={item.page}
                   type="button"
@@ -99,10 +104,15 @@ export default function App() {
                 <Icon name="chevronRight" size={14} />
                 <span className="font-semibold text-ink">{currentLabel}</span>
               </div>
-              <span className="inline-flex items-center gap-2 text-xs text-muted">
-                <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                공공 데이터 실시간 조회
-              </span>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 text-xs text-muted">
+                  <span className="h-1.5 w-1.5 rounded-full bg-brand" />
+                  공공 데이터 실시간 조회
+                </span>
+                <button type="button" onClick={() => navigate("auth")} className="inline-flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-brand transition-colors hover:border-brand hover:bg-mint">
+                  <Icon name="user" size={16} />{authLabel}
+                </button>
+              </div>
             </header>
 
             <main id="main-content" className="mx-auto w-full max-w-[1280px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
@@ -118,6 +128,7 @@ export default function App() {
               {page === "my-drugs" && (
                 <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => navigate("search")} />
               )}
+              {page === "auth" && <AuthPage auth={auth} />}
             </main>
           </div>
         </div>
