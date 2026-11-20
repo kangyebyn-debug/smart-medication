@@ -4,7 +4,7 @@ import Spinner from "../components/Spinner";
 import Icon from "../components/Icon";
 
 export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
-  const { myDrugs, remove } = myDrugsHook;
+  const { myDrugs, loading, loadError, actionError, busy, remove, reload } = myDrugsHook;
   const [bulkCheck, setBulkCheck] = useState({ drugs: null, status: "idle", results: [] });
   const currentCheck = bulkCheck.drugs === myDrugs ? bulkCheck : null;
   const bulkResults = currentCheck?.results || [];
@@ -49,18 +49,47 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
     <header>
       <p className="text-xs font-bold tracking-[0.16em] text-brand">복용 목록</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">나의 약</h1>
-      <p className="mt-2 break-keep text-base leading-relaxed text-muted">등록한 약은 이 브라우저에만 저장됩니다. 계정 동기화는 아직 제공되지 않습니다.</p>
+      <p className="mt-2 break-keep text-base leading-relaxed text-muted">등록한 약은 로그인한 계정에 저장되어 다른 기기에서도 확인할 수 있습니다.</p>
     </header>
   );
+
+  const actionFeedback = actionError && (
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+      <span>{actionError}</span>
+      <button type="button" onClick={reload} disabled={busy} className="rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50">목록 다시 불러오기</button>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <section className="mx-auto w-full max-w-[1200px] space-y-6">
+        {pageHeader}
+        <Spinner label="저장한 약을 불러오는 중…" />
+      </section>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <section className="mx-auto w-full max-w-[1200px] space-y-6">
+        {pageHeader}
+        <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+          <span>{loadError}</span>
+          <button type="button" onClick={reload} className="rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">다시 불러오기</button>
+        </div>
+      </section>
+    );
+  }
 
   if (myDrugs.length === 0) {
     return (
       <section className="mx-auto w-full max-w-[1200px] space-y-6">
         {pageHeader}
+        {actionFeedback}
         <div className="rounded-2xl border border-line bg-white p-8 text-center sm:p-12">
           <span aria-hidden="true" className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl border border-[#D8EFE1] bg-mint text-brand"><Icon name="bookmark" size={26} /></span>
           <h2 className="mt-5 text-lg font-bold text-ink">저장된 약이 없습니다</h2>
-          <p className="mt-2 break-keep text-base leading-relaxed text-muted">약품을 검색한 뒤 ‘나의 약에 추가’를 누르면 이 브라우저에 저장됩니다.</p>
+          <p className="mt-2 break-keep text-base leading-relaxed text-muted">약품을 검색한 뒤 ‘나의 약에 추가’를 누르면 계정에 저장됩니다.</p>
           <button type="button" onClick={onGoSearch} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
             <Icon name="search" size={17} />약품 검색하기
           </button>
@@ -76,27 +105,29 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
   return (
     <section className="mx-auto w-full max-w-[1200px] space-y-6">
       {pageHeader}
+      {actionFeedback}
       <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_-24px_rgba(27,58,75,0.4)] sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="flex items-center gap-2 text-base font-bold text-ink"><Icon name="bookmark" size={19} className="text-brand" />이 브라우저에 저장한 약</h2>
-          <span className="rounded-full border border-[#D8EFE1] bg-mint px-3 py-1 text-xs font-bold text-brand-dark">{myDrugs.length} / 10개</span>
+          <h2 className="flex items-center gap-2 text-base font-bold text-ink"><Icon name="bookmark" size={19} className="text-brand" />계정에 저장한 약</h2>
+          <span className="rounded-full border border-[#D8EFE1] bg-mint px-3 py-1 text-xs font-bold text-brand-dark">{myDrugs.length}개</span>
         </div>
         <div className="mt-5 grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))" }}>
           {myDrugs.map((d, i) => (
             <div
-              key={d.ITEM_SEQ || i}
+              key={d.id || d.ITEM_SEQ || i}
               className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-surface p-4"
             >
               <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D8EFE1] bg-mint text-brand"><Icon name="pill" size={19} /></span>
               <div className="min-w-0 flex-1">
                 <p className="break-keep break-words text-base font-semibold text-ink">{d.ITEM_NAME}</p>
-                <p className="mt-0.5 break-keep break-words text-sm text-muted">{d.ENTP_NAME}</p>
+                {d.ENTP_NAME && <p className="mt-0.5 break-keep break-words text-sm text-muted">{d.ENTP_NAME}</p>}
                 {d.MATERIAL_NAME && <p className="mt-0.5 truncate text-sm text-muted">{d.MATERIAL_NAME}</p>}
               </div>
               <button
                 type="button"
                 onClick={() => remove(d)}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-muted transition-colors hover:border-[#EFCAC7] hover:text-[#B3443C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                disabled={busy}
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line bg-white text-muted transition-colors hover:border-[#EFCAC7] hover:text-[#B3443C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-50"
                 aria-label={`${d.ITEM_NAME} 목록에서 제거`}
               >
                 <Icon name="close" size={17} />

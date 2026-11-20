@@ -1,6 +1,7 @@
 import Icon from "../components/Icon";
 
-export default function HomePage({ myDrugs, onNavigate }) {
+export default function HomePage({ myDrugsHook, signedIn, onNavigate }) {
+  const { myDrugs, loading, loadError, actionError, reload } = myDrugsHook;
   return (
     <div className="space-y-7">
       <section className="rounded-2xl border border-line bg-white p-7 sm:p-9" aria-labelledby="home-title">
@@ -41,21 +42,30 @@ export default function HomePage({ myDrugs, onNavigate }) {
         <section className="rounded-2xl border border-line bg-white p-6 sm:p-7" aria-labelledby="saved-drugs-title">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="break-keep text-xs font-bold tracking-[0.12em] text-brand">현재 이 브라우저에 저장됨</p>
+              <p className="break-keep text-xs font-bold tracking-[0.12em] text-brand">{signedIn ? "내 계정에 저장됨" : "로그인 후 이용 가능"}</p>
               <h2 id="saved-drugs-title" className="mt-2 text-xl font-bold tracking-[-0.035em] text-ink">나의 약</h2>
             </div>
             <span className="flex h-10 min-w-10 items-center justify-center rounded-xl bg-mint px-2 text-sm font-bold text-brand">
-              {myDrugs.length}
+              {!signedIn || loading || loadError ? "–" : myDrugs.length}
             </span>
           </div>
-          {myDrugs.length === 0 ? (
+          {!signedIn ? (
+            <p className="mt-5 break-keep rounded-xl bg-surface px-4 py-5 text-base leading-7 text-muted">나의 약을 저장하고 확인하려면 로그인해주세요.</p>
+          ) : loading ? (
+            <p role="status" className="mt-5 break-keep rounded-xl bg-surface px-4 py-5 text-base leading-7 text-muted">저장한 약을 불러오는 중…</p>
+          ) : loadError ? (
+            <div role="alert" className="mt-5 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+              <p>{loadError}</p>
+              <button type="button" onClick={reload} className="mt-3 rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">다시 불러오기</button>
+            </div>
+          ) : myDrugs.length === 0 ? (
             <p className="mt-5 break-keep rounded-xl bg-surface px-4 py-5 text-base leading-7 text-muted">
               아직 저장한 약이 없습니다. 검색 결과에서 약을 선택해 나의 약에 추가할 수 있습니다.
             </p>
           ) : (
             <ul className="mt-5 divide-y divide-line rounded-xl border border-line px-4">
               {myDrugs.slice(0, 3).map((drug, index) => (
-                <li key={drug.ITEM_SEQ || `${drug.ITEM_NAME}-${index}`} className="flex items-center gap-3 py-3">
+                <li key={drug.id || drug.ITEM_SEQ || `${drug.ITEM_NAME}-${index}`} className="flex items-center gap-3 py-3">
                   <Icon name="pill" size={18} className="shrink-0 text-brand" />
                   <span className="min-w-0 truncate text-base font-medium text-ink">{drug.ITEM_NAME}</span>
                 </li>
@@ -64,6 +74,12 @@ export default function HomePage({ myDrugs, onNavigate }) {
                 <li className="break-keep py-3 text-base text-muted">그 밖에 {myDrugs.length - 3}개 약이 더 있습니다.</li>
               )}
             </ul>
+          )}
+          {signedIn && actionError && (
+            <div role="alert" className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+              <span>{actionError}</span>
+              <button type="button" onClick={reload} className="rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">목록 다시 불러오기</button>
+            </div>
           )}
           <button
             type="button"
