@@ -35,3 +35,40 @@ export async function checkInteraction(drug1, drug2) {
   if (!res.ok) throw new Error("병용금기 조회 실패");
   return res.json();
 }
+
+async function myDrugsRequest(path, accessToken, options = {}) {
+  const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+    },
+  });
+  if (!res.ok) {
+    const error = new Error("나의 약 요청 실패");
+    error.status = res.status;
+    throw error;
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+export async function getMyDrugs(accessToken) {
+  const rows = await myDrugsRequest("/me/drugs", accessToken);
+  if (!Array.isArray(rows)) throw new Error("나의 약 응답 형식 오류");
+  return rows;
+}
+
+export function addMyDrug(accessToken, drug) {
+  return myDrugsRequest("/me/drugs", accessToken, {
+    method: "POST",
+    body: JSON.stringify({
+      drug_name: drug.ITEM_NAME,
+      product_code: drug.ITEM_SEQ ? String(drug.ITEM_SEQ) : null,
+    }),
+  });
+}
+
+export function deleteMyDrug(accessToken, id) {
+  return myDrugsRequest(`/me/drugs/${encodeURIComponent(id)}`, accessToken, { method: "DELETE" });
+}

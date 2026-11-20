@@ -27,7 +27,7 @@ export default function SearchPage({ myDrugsHook, initialQuery = "" }) {
   const slowTimerRef = useRef(null);
 
   const { results, loading, error: searchError, completed: searchCompleted, retry, clear } = useDebounce(drug ? "" : query);
-  const { toggle, has } = myDrugsHook;
+  const { toggle, has, loadError, actionError, busy, reload, loading: myDrugsLoading } = myDrugsHook;
 
   async function handleSelect(d) {
     const requestId = ++requestIdRef.current;
@@ -129,6 +129,18 @@ export default function SearchPage({ myDrugsHook, initialQuery = "" }) {
 
       {drug && (
         <div className="space-y-5">
+          {loadError && (
+            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+              <span>{loadError}</span>
+              <button type="button" onClick={reload} className="rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">다시 불러오기</button>
+            </div>
+          )}
+          {actionError && (
+            <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#EEDFC3] bg-[#FDF8EE] p-4 text-base text-[#815511]">
+              <span>{actionError}</span>
+              <button type="button" onClick={reload} disabled={busy} className="rounded-lg border border-[#D8C6A3] bg-white px-3 py-1.5 text-sm font-semibold hover:bg-[#FDF8EE] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:opacity-50">목록 다시 불러오기</button>
+            </div>
+          )}
           <DrugInfoCard
             drug={drug}
             imageUrl={imageUrl}
@@ -136,6 +148,7 @@ export default function SearchPage({ myDrugsHook, initialQuery = "" }) {
             onClear={handleClear}
             onBookmark={() => toggle(drug)}
             isBookmarked={has(drug)}
+            bookmarkDisabled={busy || myDrugsLoading || Boolean(loadError)}
           />
 
           <div className="grid gap-5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 23rem), 1fr))" }}>

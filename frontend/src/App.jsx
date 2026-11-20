@@ -20,10 +20,19 @@ export default function App() {
   const [page, setPage] = useState("landing");
   const [initialQuery, setInitialQuery] = useState("");
   const [searchMount, setSearchMount] = useState(0);
+  const [authNotice, setAuthNotice] = useState(null);
   const auth = useAuth();
-  const myDrugsHook = useMyDrugs();
+
+  function requireAuthForMyDrugs() {
+    setAuthNotice("나의 약을 사용하려면 로그인해주세요. 로그인 후 약품을 다시 검색해 추가할 수 있습니다.");
+    setPage("auth");
+    window.scrollTo(0, 0);
+  }
+
+  const myDrugsHook = useMyDrugs(auth.session, requireAuthForMyDrugs);
 
   function navigate(nextPage, query = "") {
+    setAuthNotice(null);
     if (nextPage === "search") {
       setInitialQuery(query.trim());
       setSearchMount((value) => value + 1);
@@ -77,7 +86,7 @@ export default function App() {
                 >
                   <Icon name={item.icon} size={19} className="shrink-0" />
                   <span>{item.label}</span>
-                  {item.page === "my-drugs" && myDrugsHook.myDrugs.length > 0 && (
+                  {item.page === "my-drugs" && auth.session && myDrugsHook.myDrugs.length > 0 && (
                     <span className="ml-auto rounded-md bg-white/15 px-1.5 py-0.5 text-[11px]">{myDrugsHook.myDrugs.length}</span>
                   )}
                 </button>
@@ -117,18 +126,20 @@ export default function App() {
 
             <main id="main-content" className="mx-auto w-full max-w-[1280px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
               {page === "home" && (
-                <HomePage myDrugs={myDrugsHook.myDrugs} onNavigate={navigate} />
+                <HomePage myDrugsHook={myDrugsHook} signedIn={Boolean(auth.session)} onNavigate={navigate} />
               )}
               {page === "search" && (
                 <SearchPage key={searchMount} myDrugsHook={myDrugsHook} initialQuery={initialQuery} />
               )}
               {page === "compare" && (
-                <InteractionPage myDrugsHook={myDrugsHook} />
+                <InteractionPage key={auth.session?.user?.id ?? "anonymous"} myDrugsHook={myDrugsHook} />
               )}
               {page === "my-drugs" && (
-                <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => navigate("search")} />
+                auth.session
+                  ? <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => navigate("search")} />
+                  : <AuthPage auth={auth} notice={auth.loading ? null : "나의 약을 사용하려면 로그인해주세요."} />
               )}
-              {page === "auth" && <AuthPage auth={auth} />}
+              {page === "auth" && <AuthPage auth={auth} notice={authNotice} />}
             </main>
           </div>
         </div>

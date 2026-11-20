@@ -92,7 +92,11 @@ export default function InteractionPage({ myDrugsHook }) {
     }
   }
 
-  const myDrugsForDrug2 = myDrugs.filter(d => d.ITEM_SEQ !== drug1?.ITEM_SEQ);
+  const myDrugsForDrug2 = myDrugs.filter(d =>
+    !drug1 || (d.ITEM_SEQ && drug1.ITEM_SEQ
+      ? String(d.ITEM_SEQ) !== String(drug1.ITEM_SEQ)
+      : d.ITEM_NAME !== drug1.ITEM_NAME)
+  );
 
   return (
     <section className="mx-auto w-full max-w-[1200px] space-y-6">
@@ -140,12 +144,12 @@ export default function InteractionPage({ myDrugsHook }) {
                 )}
                 {myDrugs.length > 0 && (
                   <div className="mt-4 border-t border-line pt-3">
-                    <p className="mb-2 break-keep text-base font-medium text-muted">이 브라우저에 저장한 약에서 선택</p>
+                    <p className="mb-2 break-keep text-base font-medium text-muted">계정에 저장한 약에서 선택</p>
                     <div className="flex flex-wrap gap-2">
                       {myDrugs.map((d, i) => (
                         <button
                           type="button"
-                          key={d.ITEM_SEQ || i}
+                          key={d.id || d.ITEM_SEQ || i}
                           onClick={() => selectDrug1(d)}
                           className="rounded-full border border-[#D8EFE1] bg-white px-3 py-1.5 text-xs font-medium text-brand-dark transition-colors hover:border-brand hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                         >
@@ -194,12 +198,12 @@ export default function InteractionPage({ myDrugsHook }) {
                 )}
                 {myDrugsForDrug2.length > 0 && (
                   <div className="mt-4 border-t border-line pt-3">
-                    <p className="mb-2 break-keep text-base font-medium text-muted">이 브라우저에 저장한 약에서 선택</p>
+                    <p className="mb-2 break-keep text-base font-medium text-muted">계정에 저장한 약에서 선택</p>
                     <div className="flex flex-wrap gap-2">
                       {myDrugsForDrug2.map((d, i) => (
                         <button
                           type="button"
-                          key={d.ITEM_SEQ || i}
+                          key={d.id || d.ITEM_SEQ || i}
                           onClick={() => selectDrug2(d)}
                           className="rounded-full border border-[#D8EFE1] bg-white px-3 py-1.5 text-xs font-medium text-brand-dark transition-colors hover:border-brand hover:bg-mint focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                         >

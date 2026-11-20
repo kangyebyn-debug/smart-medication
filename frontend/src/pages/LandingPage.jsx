@@ -18,7 +18,7 @@ const actions = [
     page: "my-drugs",
     icon: "bookmark",
     title: "나의 약",
-    description: "이 브라우저에 저장한 약을 모아보고 조합을 확인하세요.",
+    description: "계정에 저장한 약을 모아보고 조합을 확인하세요.",
   },
 ];
 

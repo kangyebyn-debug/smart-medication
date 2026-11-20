@@ -8,7 +8,7 @@ function errorMessage(error) {
   return error?.message || "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
 }
 
-export default function AuthPage({ auth }) {
+export default function AuthPage({ auth, notice }) {
   const [mode, setMode] = useState("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -72,6 +72,9 @@ export default function AuthPage({ auth }) {
           ? "현재 로그인한 계정을 확인하거나 로그아웃할 수 있습니다."
           : "약품 검색과 병용금기 확인은 로그인 없이 사용할 수 있습니다."}
       </p>
+      {notice && !auth.session && (
+        <p role="status" className="mt-5 rounded-xl border border-[#D8EFE1] bg-mint p-4 text-base leading-7 text-brand-dark">{notice}</p>
+      )}
 
       <div className="mt-8 rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_-24px_rgba(27,58,75,0.4)] sm:p-8">
         {auth.loading ? (
