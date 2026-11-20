@@ -2,5 +2,6 @@ fastapi==0.136.0
 httpx==0.28.1
 pydantic==2.13.3
 python-dotenv==1.2.2
+PyJWT[crypto]==2.15.1
 starlette==1.0.0
 uvicorn==0.45.0
