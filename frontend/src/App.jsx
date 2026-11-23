@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMyDrugs } from "./hooks/useMyDrugs";
 import { useAuth } from "./hooks/useAuth";
 import Icon from "./components/Icon";
+import HeaderAuth from "./components/HeaderAuth";
 import LandingPage from "./pages/LandingPage";
 import HomePage from "./pages/HomePage";
 import SearchPage from "./pages/SearchPage";
@@ -49,7 +50,7 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       {page === "landing" ? (
-        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} isSignedIn={Boolean(auth.session)} />
+        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} auth={auth} />
       ) : (
         <div className="app-layout bg-[#F6F8F7]">
           <aside className="app-sidebar bg-sidebar text-white" aria-label="앱 내비게이션">
@@ -118,9 +119,7 @@ export default function App() {
                   <span className="h-1.5 w-1.5 rounded-full bg-brand" />
                   공공 데이터 실시간 조회
                 </span>
-                <button type="button" onClick={() => navigate("auth")} className="inline-flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-brand transition-colors hover:border-brand hover:bg-mint">
-                  <Icon name="user" size={16} />{authLabel}
-                </button>
+                <HeaderAuth auth={auth} onSignIn={() => navigate("auth")} />
               </div>
             </header>
 

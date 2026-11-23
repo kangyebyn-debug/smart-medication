@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
 import HeroIllustration from "../components/HeroIllustration";
+import HeaderAuth from "../components/HeaderAuth";
 
 const actions = [
   {
@@ -47,7 +48,7 @@ const steps = [
   },
 ];
 
-export default function LandingPage({ onNavigate, onSearch, isSignedIn }) {
+export default function LandingPage({ onNavigate, onSearch, auth }) {
   const [query, setQuery] = useState("");
   const [activeStep, setActiveStep] = useState(0);
 
@@ -89,14 +90,7 @@ export default function LandingPage({ onNavigate, onSearch, isSignedIn }) {
               서비스 둘러보기
               <Icon name="arrowRight" size={17} />
             </button>
-            <button
-              type="button"
-              onClick={() => onNavigate("auth")}
-              className="inline-flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-ink transition-colors hover:border-brand hover:text-brand sm:text-sm"
-            >
-              <Icon name="user" size={17} />
-              {isSignedIn ? "내 계정" : "로그인 · 회원가입"}
-            </button>
+            <HeaderAuth auth={auth} onSignIn={() => onNavigate("auth")} />
           </div>
         </header>
       </div>
