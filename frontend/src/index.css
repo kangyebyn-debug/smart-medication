@@ -91,6 +91,23 @@ button:disabled {
   gap: 20px;
 }
 
+.elevated-card {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.elevated-card:focus-within {
+  border-color: #1F8A5E66;
+  box-shadow: 0 12px 28px -8px #146A4530;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .elevated-card:hover {
+    transform: translateY(-3px);
+    border-color: #1F8A5E66;
+    box-shadow: 0 12px 28px -8px #146A4530;
+  }
+}
+
 .landing-hero {
   background: linear-gradient(105deg, #FFFFFF 35%, #EAF6EF 76%, #D8EFE1 100%);
 }
@@ -165,6 +182,10 @@ button:disabled {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .elevated-card:hover {
+    transform: none;
+  }
+
   *,
   *::before,
   *::after {

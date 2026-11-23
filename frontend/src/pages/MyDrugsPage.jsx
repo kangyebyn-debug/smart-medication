@@ -115,7 +115,7 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
           {myDrugs.map((d, i) => (
             <div
               key={d.id || d.ITEM_SEQ || i}
-              className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-surface p-4"
+              className="elevated-card flex min-w-0 items-center gap-3 rounded-xl border border-line bg-surface p-4"
             >
               <span aria-hidden="true" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#D8EFE1] bg-mint text-brand"><Icon name="pill" size={19} /></span>
               <div className="min-w-0 flex-1">
