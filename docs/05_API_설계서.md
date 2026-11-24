@@ -1,6 +1,6 @@
 # 스마트 메디케이션 API 설계서
 
-- 작성일: 2026.11.18 / 2026.11.20 (나의 약 백엔드 API 구현 반영)
+- 작성일: 2026.11.18 / 2026.11.20 / 2026.11.24 (나의 약·프로필 백엔드 API 구현 반영)
 - 관련 문서: `01_기획서_v3.md`, `02_설계서_아키텍처_보안.md`, `03_DB_설계서.md`
 - 성격: 백엔드(FastAPI, Render 배포) API 명세. **"상태" 열에서 "구현됨"은 로컬 저장소(`D:\Project_KYB\smart-medication\backend`) 코드를 직접 열어 확인한 것만 표기하며, 그 외는 01 기획서 로드맵(Phase 2~5)에 따른 설계안(미구현)입니다.**
 
@@ -29,7 +29,7 @@
 | GET | `/drugs/check` | `drug1`(필수), `drug2`(필수) | `drug1`, `drug2`, `is_prohibited`, `interactions`/`all_prohibited` | **두 약품**의 병용금기 여부 비교 | **구현됨** |
 
 > 01 기획서 5~6장에서 "병용금기 확인"이라고 서술한 기능은 실제로는 `/drugs/check`(두 약품 비교)가 담당하며, `/drugs/warnings`는 한 약품의 금기 정보 전체 조회용입니다. 두 라우트의 역할 차이가 01/02 문서의 서술과 정확히 1:1로 맞지는 않으니, 화면·문서 쪽 표현은 추후 보완이 필요합니다.
-> 이 절의 공개 약품 API는 인증 없이 공공 API를 그때그때 호출합니다. 계정 인증과 Supabase 저장 데이터 호출은 3장의 `/me/drugs` 라우트에만 적용합니다.
+> 이 절의 공개 약품 API는 인증 없이 공공 API를 그때그때 호출합니다. 계정 인증과 Supabase 저장 데이터 호출은 3장의 `/me/drugs`와 3-1절의 `/me/profile` 라우트에 적용합니다.
 
 ### Phase 1 약 상세정보 보강
 
@@ -54,6 +54,23 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - Supabase Data API에는 publishable key를 `apikey` 헤더에, 검증된 **사용자 JWT**를 `Authorization: Bearer` 헤더에 전달합니다. `POST`의 `user_id`는 요청 본문을 받지 않고 JWT의 `sub`에서 설정하며, `GET`·`DELETE`에는 본인 `user_id` 필터와 `saved_drugs` RLS가 함께 적용됩니다. 서비스 키는 사용하지 않습니다.
 - 삭제 대상이 없거나 본인 약이 아니면 같은 `404`를 반환합니다. 잘못된 요청 본문·UUID는 FastAPI의 `422`입니다.
 - Supabase Data API가 `401`(인증 실패)을 반환하면 백엔드도 `401`, `403`(접근 권한 없음)을 반환하면 백엔드도 `403`을 반환합니다. 그 밖의 저장소 요청 실패는 `502`입니다.
+
+### 3-1. 내 프로필 API (백엔드 구현 — 로그인 필요)
+
+`backend/app/routers/profile.py`와 `app/services/profile.py`를 직접 확인한 계약입니다 (2026.11.24). 기존 `profiles` 테이블의 표시 이름만 조회·수정하며, 이메일은 응답하거나 변경하지 않습니다. 프런트는 기존 `auth.session.user.email`을 사용합니다.
+
+| 메서드 | 경로 | 요청 | 성공 응답 | 상태 |
+|---|---|---|---|---|
+| GET | `/me/profile` | Bearer JWT | `200` · `{ "display_name": "..." }` 또는 `{ "display_name": null }` | **구현됨** |
+| PATCH | `/me/profile` | Bearer JWT · JSON `{ "display_name": "..." }` 또는 `{ "display_name": null }` | `200` · 저장된 `display_name` 한 필드 | **구현됨** |
+
+- `/me/drugs`와 같은 `CurrentUser`·`get_current_user` 인증 의존성을 재사용합니다. Supabase Data API에는 publishable key와 검증된 사용자 JWT를 전달하고, 두 메서드 모두 JWT의 사용자 ID로 `profiles.id`를 필터링하여 본인 행 RLS를 유지합니다. 관리자 키로 정책을 우회하지 않습니다.
+- `PATCH`의 `display_name`은 필수 필드이며 문자열 또는 `null`만 받습니다. 문자열 앞뒤 공백은 제거하고, 빈 문자열·공백만 있는 문자열은 `null`로 정규화합니다. `id`, `email` 등 다른 필드는 허용하지 않으며, 누락·잘못된 자료형·추가 필드는 `422`입니다.
+- `display_name: null`인 정상 프로필은 `200`입니다. 반면 조회·수정 결과가 빈 배열이면 행 부재 또는 RLS로 보이지 않는 경우이므로 `404`로 구분합니다. 잘못된 응답 형식·복수 행·요청/네트워크 실패는 `502`입니다.
+- 미인증·유효하지 않은 JWT 및 Supabase의 `401`은 `401`(`WWW-Authenticate: Bearer`), Supabase의 `403`은 `403`입니다. 인증/저장소 설정 누락이나 JWKS 인증 서버 연결 실패는 `503`입니다. 저장소 내부 오류 내용은 그대로 노출하지 않습니다.
+- 로컬 검증: `backend` 디렉터리에서 `.\.venv\Scripts\python.exe -m unittest discover -s tests -v`를 실행하여 프로필 테스트 14개를 포함한 전체 44개 테스트가 통과했습니다 (2026.11.24). 프로필 자동 테스트는 생성한 ES256 키·오프라인 JWKS와 모의 Supabase 응답을 사용하며, 실제 Supabase 권한·데이터 검증과 구분합니다.
+- 실제 권한 확인 (2026.11.24): 사용자가 유효한 사용자 JWT로 로컬 Swagger의 `GET /me/profile`을 호출하여 `403` 및 `"프로필 저장소 접근 권한이 없습니다."` 응답을 직접 확인했습니다. 이에 `backend/supabase/migrations/0003_profiles_authenticated_grant.sql`에 `grant select, update on public.profiles to authenticated;`를 추가했으며, 기존 RLS는 유지합니다. 사용자가 Supabase SQL Editor에서 GRANT를 실행한 뒤 다시 조회하여 **`200 OK` 및 `{ "display_name": null }` 응답(표시 이름 미설정)을 확인했습니다.** 실제 계정의 `PATCH /me/profile`과 나의 약 전체 삭제는 운영 DB에서 테스트하지 않았습니다.
+- 나의 약 목록 초기화는 기존 `DELETE /me/drugs/{id}` 반복 호출을 사용하며 새 초기화 엔드포인트는 추가하지 않습니다. 이메일·비밀번호 변경 및 계정 삭제 API는 이번 구현 범위가 아닙니다.
 
 ## 4. 복약 질문 AI API (설계안 — 로그인 필요, ★메인 기능)
 
@@ -87,7 +104,7 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 ## 7. 공통 사항
 
 - **에러 응답 형식**: 구현된 라우트는 FastAPI의 `{"detail": "..."}` 형식을 사용합니다.
-- **인증 실패**: `/me/drugs`에 토큰 없이 접근하거나 유효하지 않은 토큰을 보내면 `401`입니다. 아직 미구현인 관리자 전용 라우트의 권한 부족 응답은 구현 시 결정합니다.
+- **인증 실패**: `/me/drugs`와 `/me/profile`에 토큰 없이 접근하거나 유효하지 않은 토큰을 보내면 `401`입니다. 아직 미구현인 관리자 전용 라우트의 권한 부족 응답은 구현 시 결정합니다.
 
 ## 8. 근거 자료
 
@@ -95,5 +112,6 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - `02_설계서_아키텍처_보안.md` 1장(시스템 구성), 2장(보안·개인정보 설계) — 인증 방식, 공개 라우트, 처방전 파이프라인 근거
 - `03_DB_설계서.md` 2장(Supabase 스키마), 3장(Pinecone 인덱스) — 나의 약/채팅/처방전 API의 데이터 구조 근거
 - 로컬 저장소 `D:\Project_KYB\smart-medication\backend` 코드 직접 확인 (2026.11.20) — `app/main.py`, `app/routers/drugs.py`, 나의 약 라우터·인증 dependency — 2~3장의 구현 상태 근거
+- 로컬 `app/routers/profile.py`, `app/services/profile.py`, `app/auth.py`, `tests/test_profile.py` 직접 확인 (2026.11.24) — 3-1절 프로필 계약·인증·오류 처리·모의 테스트 범위 근거. 실제 Supabase GRANT 확인 결과를 의미하지 않음
 - Supabase 공식 JWT/Signing Keys 및 API Keys 가이드 — JWKS 검증과 사용자 JWT·publishable key 헤더 조합 근거
 - 4~6장의 "설계안" 항목은 실제 코드가 아니라 01~04 문서의 서술을 바탕으로 구성한 설계입니다. 실제 구현 시 이 문서와 코드를 맞춰 갱신이 필요합니다.
