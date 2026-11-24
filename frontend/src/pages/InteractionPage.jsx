@@ -242,7 +242,7 @@ export default function InteractionPage({ myDrugsHook }) {
           : "ui-glass-card rounded-[22px] border border-line p-5 sm:px-7 sm:py-[26px]"}>
           <div className="mb-4 flex items-start gap-3.5">
             <span aria-hidden="true" className={result.is_prohibited ? "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#F7DEDC] text-[#B3443C]" : "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#E7ECE9] text-muted"}>
-              <Icon name={result.is_prohibited ? "alert" : "info"} size={20} />
+              <Icon name={result.is_prohibited ? "noEntry" : "info"} size={20} />
             </span>
             <h2 className={result.is_prohibited ? "mt-0.5 text-xl font-bold text-[#9E3831]" : "mt-0.5 text-xl font-bold text-ink"}>
               {result.is_prohibited ? "병용금기 약물입니다" : "조회 범위에서 병용금기 항목 없음"}

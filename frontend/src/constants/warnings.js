@@ -1,5 +1,5 @@
 export const WARN_TABS = [
-  { key: "interaction", label: "병용금기", icon: "alert", color: "red" },
+  { key: "interaction", label: "병용금기", icon: "noEntry", color: "red" },
   { key: "pregnancy", label: "임부금기", icon: "info", color: "amber" },
   { key: "elderly", label: "노인주의", icon: "info", color: "amber" },
   { key: "age", label: "연령금기", icon: "info", color: "neutral" },
