@@ -64,15 +64,107 @@ button:disabled {
   display: flex;
   flex-wrap: wrap;
   min-height: 100vh;
+  /* design-reference/D_confirmed.html: 셸 전체에 한 번만 그라데이션을 그린다. */
+  background: linear-gradient(150deg, #FFFFFF 0%, #F3FAF7 50%, #EAF6EF 78%, #D8EFE1 100%);
+  --color-line: rgba(23, 64, 45, 0.13);
+  --color-muted: #546A5F;
 }
 
 .app-sidebar {
   position: sticky;
   top: 0;
   display: flex;
-  flex: 0 0 260px;
+  flex: 0 0 252px;
   flex-direction: column;
   height: 100vh;
+  border-right: 1px solid var(--color-line);
+  transition: flex-basis 200ms ease;
+}
+
+.sidebar-brand-mark {
+  background: linear-gradient(135deg, #1F8A5E, #146A45);
+  box-shadow: 0 8px 16px -8px rgba(31, 138, 94, 0.55);
+}
+
+.sidebar-nav-active {
+  box-shadow: 0 10px 20px -8px rgba(31, 138, 94, 0.6);
+}
+
+.sidebar-promo {
+  border-color: var(--color-line);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 22px -16px rgba(23, 64, 45, 0.2);
+}
+
+.sidebar-collapse {
+  display: none;
+  border-color: var(--color-line);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+@media (min-width: 901px) {
+  .app-sidebar {
+    padding: 26px 16px;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .sidebar-collapse {
+    display: flex;
+  }
+
+  .sidebar-collapsed .app-sidebar {
+    flex-basis: 78px;
+    padding-inline: 14px;
+  }
+
+  .sidebar-collapsed .sidebar-brand {
+    padding-inline: 0;
+  }
+
+  .sidebar-collapsed .sidebar-brand > button {
+    margin-inline: auto;
+  }
+
+  .sidebar-collapsed .sidebar-nav-item {
+    justify-content: center;
+    padding-inline: 11px;
+  }
+
+  .sidebar-collapsed .sidebar-label,
+  .sidebar-collapsed .sidebar-heading,
+  .sidebar-collapsed .sidebar-aside,
+  .sidebar-collapsed .sidebar-footer {
+    display: none;
+  }
+}
+
+/* 낮은 레이어의 공통 시각 규칙: 화면별 값과 경고 상태 색상은 덮지 않는다. */
+@layer components {
+  .ui-glass-card {
+    border-color: var(--color-line);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(3px);
+    box-shadow: 0 16px 32px -22px rgba(23, 64, 45, 0.2);
+  }
+
+  .ui-primary-action {
+    box-shadow: 0 10px 20px -10px rgba(31, 138, 94, 0.6);
+  }
+
+  .ui-page-title {
+    margin: 8px 0 4px;
+    font-size: 27px;
+  }
+
+  .ui-eyebrow {
+    font-size: 12.5px;
+    letter-spacing: normal;
+  }
 }
 
 .app-main {
@@ -88,7 +180,7 @@ button:disabled {
 .home-overview-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr));
-  gap: 20px;
+  gap: 24px;
 }
 
 .elevated-card {
