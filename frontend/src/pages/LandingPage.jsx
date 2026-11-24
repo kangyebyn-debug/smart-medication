@@ -147,7 +147,7 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
 
       <section className="border-b border-line bg-white" aria-labelledby="landing-how-title">
         <div className="mx-auto max-w-[1320px] px-5 py-14 sm:px-8 lg:px-12 lg:py-16">
-          <p className="text-xs font-bold tracking-[0.16em] text-brand">사용 방법</p>
+          <p className="text-xs font-bold text-brand">사용 방법</p>
           <h2 id="landing-how-title" className="mt-2 text-2xl font-bold tracking-[-0.045em] text-ink sm:text-3xl">
             세 단계로 확인하세요
           </h2>
@@ -219,7 +219,7 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
       <section className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20" aria-labelledby="landing-actions-title">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="text-xs font-bold tracking-[0.16em] text-brand">바로 시작하기</p>
+            <p className="text-xs font-bold text-brand">바로 시작하기</p>
             <h2 id="landing-actions-title" className="mt-2 text-2xl font-bold tracking-[-0.045em] sm:text-3xl">
               필요한 정보부터 찾아보세요
             </h2>
