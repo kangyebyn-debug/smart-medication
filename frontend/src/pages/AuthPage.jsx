@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
+import ProfileForm from "../components/ProfileForm";
 
 function errorMessage(error) {
   if (error?.message === "Invalid login credentials") return "이메일 또는 비밀번호가 맞지 않습니다.";
@@ -91,6 +92,7 @@ export default function AuthPage({ auth, notice }) {
             <button type="button" onClick={signOut} disabled={busy} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-line px-5 text-base font-semibold text-ink transition-colors hover:border-brand hover:text-brand disabled:opacity-50">
               {busy ? "처리 중…" : "로그아웃"}
             </button>
+            <ProfileForm key={auth.session.user.id} userId={auth.session.user.id} disabled={busy} onFeedback={setFeedback} />
           </div>
         ) : (
           <>
@@ -126,7 +128,7 @@ export default function AuthPage({ auth, notice }) {
           </>
         )}
 
-        {feedback && (
+        {feedback && (!feedback.userId || feedback.userId === auth.session?.user?.id) && (
           <p role={feedback.type === "error" ? "alert" : "status"} className={`mt-5 rounded-xl border p-4 text-base leading-7 ${feedback.type === "error" ? "border-[#EFCAC7] bg-[#FDF3F3] text-[#9E3831]" : "border-[#D8EFE1] bg-mint text-brand-dark"}`}>
             {feedback.message}
           </p>
