@@ -2,7 +2,7 @@ const shapes = {
   search: <><circle cx="10.8" cy="10.8" r="6.8" /><path d="m16 16 4.5 4.5" /></>,
   pill: <><rect x="3" y="7" width="18" height="10" rx="5" transform="rotate(-45 12 12)" /><path d="m8.5 8.5 7 7" /></>,
   home: <><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><path d="M9 21v-7h6v7" /></>,
-  compare: <><rect x="2.7" y="5" width="7.5" height="14" rx="3.7" /><path d="M2.8 12h7.3" /><rect x="13.8" y="5" width="7.5" height="14" rx="3.7" /><path d="M13.9 12h7.3" /><path d="M11.2 12h1.6" /></>,
+  compare: <><rect x="3" y="4" width="8" height="16" rx="3.2" /><rect x="13" y="4" width="8" height="16" rx="3.2" /><path d="M11 12h2" strokeWidth="2.4" /></>,
   bookmark: <path d="M5.5 3.5h13v17l-6.5-4.2-6.5 4.2z" />,
   user: <><circle cx="12" cy="8" r="4" /><path d="M4.5 21v-2a7.5 7.5 0 0 1 15 0v2" /></>,
   arrowRight: <><path d="M3.5 12h17" /><path d="m14 5.5 6.5 6.5-6.5 6.5" /></>,

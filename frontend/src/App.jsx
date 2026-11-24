@@ -22,6 +22,7 @@ export default function App() {
   const [initialQuery, setInitialQuery] = useState("");
   const [searchMount, setSearchMount] = useState(0);
   const [authNotice, setAuthNotice] = useState(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const auth = useAuth();
 
   function requireAuthForMyDrugs() {
@@ -52,78 +53,88 @@ export default function App() {
       {page === "landing" ? (
         <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} auth={auth} />
       ) : (
-        <div className="app-layout bg-[#F6F8F7]">
-          <aside className="app-sidebar bg-sidebar text-white" aria-label="앱 내비게이션">
-            <div className="sidebar-brand border-b border-white/10 p-6">
+        <div className={`app-layout${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
+          <aside id="app-sidebar" className="app-sidebar text-ink" aria-label="앱 내비게이션">
+            <div className="sidebar-brand px-[10px] pb-[22px]">
               <button
                 type="button"
                 onClick={() => navigate("landing")}
                 className="flex items-center gap-3 rounded-lg text-left"
                 aria-label="스마트 메디케이션 랜딩으로 이동"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
+                <span className="sidebar-brand-mark flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-xl text-white">
                   <Icon name="pill" size={21} />
                 </span>
-                <span>
+                <span className="sidebar-label">
                   <span className="block text-sm font-bold tracking-[-0.035em]">스마트 메디케이션</span>
-                  <span className="block pt-0.5 text-[11px] text-white/50">Smart Medication</span>
+                  <span className="block pt-0.5 text-[11px] text-muted">Smart Medication</span>
                 </span>
               </button>
             </div>
 
-            <nav className="sidebar-nav px-3 py-6" aria-label="주 메뉴">
-              <p className="sidebar-heading mb-3 px-3 text-[11px] font-bold tracking-[0.14em] text-white/40">둘러보기</p>
+            <nav className="sidebar-nav" aria-label="주 메뉴">
+              <p className="sidebar-heading mb-3 px-3 text-[11px] font-bold text-muted">둘러보기</p>
               {navItems.map((item) => (
                 <button
                   key={item.page}
                   type="button"
                   onClick={() => navigate(item.page)}
                   aria-current={page === item.page ? "page" : undefined}
-                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold transition-colors ${
+                  aria-label={item.label}
+                  title={item.label}
+                  className={`sidebar-nav-item flex w-full items-center gap-3 rounded-full px-[14px] py-[11px] text-left text-[14.5px] font-semibold transition-colors ${
                     page === item.page
-                      ? "bg-brand text-white"
-                      : "text-white/70 hover:bg-white/10 hover:text-white"
+                      ? "sidebar-nav-active bg-brand text-white"
+                      : "text-ink hover:bg-white/75"
                   }`}
                 >
                   <Icon name={item.icon} size={19} className="shrink-0" />
-                  <span>{item.label}</span>
+                  <span className="sidebar-label">{item.label}</span>
                   {item.page === "my-drugs" && auth.session && myDrugsHook.myDrugs.length > 0 && (
-                    <span className="ml-auto rounded-md bg-white/15 px-1.5 py-0.5 text-[11px]">{myDrugsHook.myDrugs.length}</span>
+                    <span className="sidebar-label ml-auto rounded-full bg-white/40 px-1.5 py-0.5 text-[11px]">{myDrugsHook.myDrugs.length}</span>
                   )}
                 </button>
               ))}
             </nav>
 
-            <div className="sidebar-aside mt-auto px-5 pb-5">
-              <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-                <div className="flex items-center gap-2 text-xs font-bold text-white/80">
+            <div className="sidebar-aside mt-4">
+              <div className="sidebar-promo rounded-[18px] border p-4">
+                <div className="flex items-center gap-2 text-xs font-bold text-brand-dark">
                   <Icon name="sparkles" size={16} />
                   복약 질문 AI
                 </div>
-                <p className="mt-2 text-xs leading-5 text-white/50">내 약을 바탕으로 질문하는 기능을 준비하고 있습니다.</p>
-                <span className="mt-3 inline-block rounded-full bg-white/10 px-2.5 py-1 text-[11px] text-white/65">준비 중</span>
+                <p className="mt-2 text-xs leading-5 text-muted">내 약을 바탕으로 질문하는 기능을 준비하고 있습니다.</p>
+                <span className="mt-3 inline-block rounded-full bg-brand/10 px-2.5 py-1 text-[11px] text-brand-dark">준비 중</span>
               </div>
             </div>
-            <p className="sidebar-footer border-t border-white/10 px-6 py-5 text-[11px] text-white/40">공공 의약품 정보 기반</p>
+            <button
+              type="button"
+              className="sidebar-collapse mt-auto items-center justify-center gap-2 rounded-full border p-[10px] text-[13px] text-muted transition-colors hover:border-brand hover:text-brand"
+              onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+              aria-label={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+              aria-expanded={!sidebarCollapsed}
+              aria-controls="app-sidebar"
+              title={sidebarCollapsed ? "사이드바 펼치기" : "사이드바 접기"}
+            >
+              <Icon name="chevronRight" size={16} className={sidebarCollapsed ? "" : "rotate-180"} />
+              <span className="sidebar-label">접기</span>
+            </button>
+            <p className="sidebar-footer px-3 pt-5 text-[11px] text-muted">공공 의약품 정보 기반</p>
           </aside>
 
           <div className="app-main min-w-0">
-            <header className="flex min-h-16 flex-wrap items-center justify-between gap-3 border-b border-line bg-white px-5 py-4 sm:px-8 lg:px-10">
+            <header className="flex min-h-[68px] flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-8">
               <div className="flex items-center gap-2 text-xs font-medium text-muted">
                 <span>스마트 메디케이션</span>
                 <Icon name="chevronRight" size={14} />
                 <span className="font-semibold text-ink">{currentLabel}</span>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex items-center gap-2 text-xs text-muted">
-                  <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-                  공공 데이터 실시간 조회
-                </span>
                 <HeaderAuth auth={auth} onSignIn={() => navigate("auth")} />
               </div>
             </header>
 
-            <main id="main-content" className="mx-auto w-full max-w-[1280px] px-5 py-7 sm:px-8 sm:py-9 lg:px-10">
+            <main id="main-content" className={`mx-auto w-full px-5 py-7 sm:px-8 sm:pb-[60px] sm:pt-9 ${page === "home" ? "max-w-none" : "max-w-[1150px]"}`}>
               {page === "home" && (
                 <HomePage myDrugsHook={myDrugsHook} signedIn={Boolean(auth.session)} onNavigate={navigate} />
               )}
