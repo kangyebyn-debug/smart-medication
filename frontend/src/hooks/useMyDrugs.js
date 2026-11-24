@@ -158,9 +158,61 @@ export function useMyDrugs(session, onRequireAuth) {
     );
   }
 
+  async function reset(expectedDrugs) {
+    if (!userId) {
+      onRequireAuth();
+      return null;
+    }
+    if (pendingRef.current || loading || loadError || expectedDrugs !== myDrugs) return null;
+
+    const generation = generationRef.current;
+    pendingRef.current = true;
+    setState((previous) => ({ ...previous, busy: true, actionError: null }));
+    try {
+      const accessToken = await accessTokenFor(userId);
+      if (generationRef.current !== generation) return null;
+      // 화면을 떠나도 App의 목록을 갱신하고, 기존 저장·삭제와 같은 잠금을 사용한다.
+      const settled = await Promise.allSettled(
+        expectedDrugs.map((drug) => deleteMyDrug(accessToken, drug.id))
+      );
+      if (generationRef.current !== generation) return null;
+
+      const deletedIds = new Set(expectedDrugs.filter((_, index) => settled[index].status === "fulfilled").map((drug) => drug.id));
+      let updatedDrugs = myDrugs.filter((drug) => !deletedIds.has(drug.id));
+      let refreshError = null;
+      try {
+        updatedDrugs = (await getMyDrugs(accessToken)).map(toMyDrug);
+      } catch (error) {
+        refreshError = errorMessage(error, "load");
+      }
+      if (generationRef.current !== generation) return null;
+      setState((previous) => previous.userId === userId
+        ? { ...previous, myDrugs: updatedDrugs, busy: false, actionError: refreshError }
+        : previous);
+      return {
+        deletedCount: deletedIds.size,
+        failedCount: settled.length - deletedIds.size,
+        expired: settled.some((result) => result.status === "rejected" && result.reason?.status === 401),
+        refreshError,
+      };
+    } catch (error) {
+      if (generationRef.current === generation) {
+        setState((previous) => previous.userId === userId
+          ? { ...previous, actionError: errorMessage(error, "change") }
+          : previous);
+      }
+      throw error;
+    } finally {
+      if (generationRef.current === generation) {
+        pendingRef.current = false;
+        setState((previous) => previous.userId === userId ? { ...previous, busy: false } : previous);
+      }
+    }
+  }
+
   function has(drug) {
     return myDrugs.some((saved) => sameDrug(saved, drug));
   }
 
-  return { myDrugs, loading, loadError, actionError, busy, reload, toggle, remove, has };
+  return { myDrugs, loading, loadError, actionError, busy, reload, toggle, remove, reset, has };
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
 import ProfileForm from "../components/ProfileForm";
+import MyDrugsReset from "../components/MyDrugsReset";
 
 function errorMessage(error) {
   if (error?.message === "Invalid login credentials") return "이메일 또는 비밀번호가 맞지 않습니다.";
@@ -9,7 +10,7 @@ function errorMessage(error) {
   return error?.message || "요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.";
 }
 
-export default function AuthPage({ auth, notice }) {
+export default function AuthPage({ auth, notice, myDrugsHook }) {
   const [mode, setMode] = useState("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -92,7 +93,8 @@ export default function AuthPage({ auth, notice }) {
             <button type="button" onClick={signOut} disabled={busy} className="mt-6 inline-flex min-h-12 items-center justify-center rounded-xl border border-line px-5 text-base font-semibold text-ink transition-colors hover:border-brand hover:text-brand disabled:opacity-50">
               {busy ? "처리 중…" : "로그아웃"}
             </button>
-            <ProfileForm key={auth.session.user.id} userId={auth.session.user.id} disabled={busy} onFeedback={setFeedback} />
+            <ProfileForm key={`profile-${auth.session.user.id}`} userId={auth.session.user.id} disabled={busy} onFeedback={setFeedback} />
+            <MyDrugsReset key={`drugs-${auth.session.user.id}`} userId={auth.session.user.id} myDrugsHook={myDrugsHook} disabled={busy} onFeedback={setFeedback} />
           </div>
         ) : (
           <>

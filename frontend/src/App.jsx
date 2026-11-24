@@ -147,9 +147,9 @@ export default function App() {
               {page === "my-drugs" && (
                 auth.session
                   ? <MyDrugsPage myDrugsHook={myDrugsHook} onGoSearch={() => navigate("search")} />
-                  : <AuthPage auth={auth} notice={auth.loading ? null : "나의 약을 사용하려면 로그인해주세요."} />
+                  : <AuthPage auth={auth} myDrugsHook={myDrugsHook} notice={auth.loading ? null : "나의 약을 사용하려면 로그인해주세요."} />
               )}
-              {page === "auth" && <AuthPage auth={auth} notice={authNotice} />}
+              {page === "auth" && <AuthPage auth={auth} myDrugsHook={myDrugsHook} notice={authNotice} />}
             </main>
           </div>
         </div>
