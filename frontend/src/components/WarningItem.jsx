@@ -3,7 +3,7 @@ import { COLOR } from "../constants/warnings";
 export default function WarningItem({ item, color }) {
   const s = COLOR[color];
   return (
-    <div className={`rounded-xl border p-4 ${s.wrap}`}>
+    <div className={`rounded-2xl border px-[18px] py-4 ${s.wrap}`}>
       <p className="break-keep text-base font-semibold leading-snug text-ink [overflow-wrap:anywhere]">
         {item.MIXTURE_ITEM_NAME || item.INGR_KOR_NAME || "-"}
       </p>

@@ -99,19 +99,19 @@ export default function InteractionPage({ myDrugsHook }) {
   );
 
   return (
-    <section className="mx-auto w-full max-w-[1200px] space-y-6">
+    <section className="mx-auto w-full max-w-[1150px] space-y-[22px]">
       <header>
-        <p className="text-xs font-bold tracking-[0.16em] text-brand">함께 복용하기 전</p>
-        <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">병용금기 확인</h1>
-        <p className="mt-2 break-keep text-base leading-relaxed text-muted">두 약품을 선택하면 공공 DUR에서 조회되는 병용금기 항목을 확인합니다.</p>
+        <p className="ui-eyebrow font-bold text-brand">함께 복용하기 전</p>
+        <h1 className="ui-page-title font-bold text-ink">병용금기 확인</h1>
+        <p className="break-keep text-base leading-[1.6] text-muted">두 약품을 선택하면 공공 DUR에서 조회되는 병용금기 항목을 확인합니다.</p>
       </header>
-      <div className="rounded-2xl border border-line bg-white p-5 shadow-[0_12px_32px_-24px_rgba(27,58,75,0.4)] sm:p-6">
-        <h2 className="flex items-center gap-2 text-base font-bold text-ink"><Icon name="compare" size={20} className="text-brand" />비교할 약품</h2>
+      <div className="ui-glass-card rounded-[22px] border p-5 sm:px-7 sm:py-[26px]">
+        <h2 className="flex items-center gap-2.5 text-[17px] font-bold text-ink"><Icon name="compare" size={20} className="text-brand" />비교할 약품</h2>
 
-        <div className="mt-5 grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))" }}>
+        <div className="mt-4 grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))" }}>
           {/* 약품 1 */}
-          <div className="rounded-xl border border-line bg-surface p-4 sm:p-5">
-            <label htmlFor="drug-one-search" className="mb-3 block text-sm font-semibold text-ink">첫 번째 약품</label>
+          <div className="interaction-pick-column rounded-[18px] border border-line bg-white/65 p-[18px]">
+            <label htmlFor="drug-one-search" className="mb-2.5 block text-[14.5px] font-semibold text-ink">첫 번째 약품</label>
             {drug1 ? (
               <DrugInfoCard drug={drug1} imageUrl={image1} onClear={clearDrug1} />
             ) : (
@@ -124,7 +124,7 @@ export default function InteractionPage({ myDrugsHook }) {
                     value={query1}
                     onChange={(e) => setQuery1(e.target.value)}
                     placeholder="약품명 입력"
-                    className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-base text-ink outline-none placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-mint"
+                    className="w-full rounded-full border border-line bg-white py-3 pl-11 pr-[18px] text-base text-ink outline-none placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-mint"
                   />
                 </div>
                 {s1.loading && <p className="mt-2 text-base text-brand">검색 중…</p>}
@@ -164,8 +164,8 @@ export default function InteractionPage({ myDrugsHook }) {
           </div>
 
           {/* 약품 2 */}
-          <div className="rounded-xl border border-line bg-surface p-4 sm:p-5">
-            <label htmlFor="drug-two-search" className="mb-3 block text-sm font-semibold text-ink">두 번째 약품</label>
+          <div className="interaction-pick-column rounded-[18px] border border-line bg-white/65 p-[18px]">
+            <label htmlFor="drug-two-search" className="mb-2.5 block text-[14.5px] font-semibold text-ink">두 번째 약품</label>
             {drug2 ? (
               <DrugInfoCard drug={drug2} imageUrl={image2} onClear={clearDrug2} />
             ) : (
@@ -178,7 +178,7 @@ export default function InteractionPage({ myDrugsHook }) {
                     value={query2}
                     onChange={(e) => setQuery2(e.target.value)}
                     placeholder="약품명 입력"
-                    className="w-full rounded-xl border border-line bg-white py-3 pl-11 pr-4 text-base text-ink outline-none placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-mint"
+                    className="w-full rounded-full border border-line bg-white py-3 pl-11 pr-[18px] text-base text-ink outline-none placeholder:text-muted/70 focus:border-brand focus:ring-2 focus:ring-mint"
                   />
                 </div>
                 {s2.loading && <p className="mt-2 text-base text-brand">검색 중…</p>}
@@ -222,7 +222,7 @@ export default function InteractionPage({ myDrugsHook }) {
           type="button"
           onClick={handleCheck}
           disabled={!drug1 || !drug2 || checking}
-          className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-40"
+          className="ui-primary-action mt-[18px] inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-5 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-40"
         >
           <Icon name="compare" size={17} />
           {checking ? "조회 중…" : checkError ? "다시 조회하기" : "병용금기 확인하기"}
@@ -238,23 +238,23 @@ export default function InteractionPage({ myDrugsHook }) {
 
       {result && (
         <section className={result.is_prohibited
-          ? "rounded-2xl border border-[#EFCAC7] bg-[#FDF3F3] p-5 sm:p-6"
-          : "rounded-2xl border border-line bg-surface p-5 sm:p-6"}>
-          <div className="mb-4 flex items-start gap-3">
-            <span aria-hidden="true" className={result.is_prohibited ? "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F7DEDC] text-[#B3443C]" : "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E7ECE9] text-muted"}>
+          ? "rounded-[22px] border border-[#EFCAC7] bg-[#FDF3F3] p-5 shadow-[0_16px_32px_-22px_rgba(158,56,49,.25)] sm:px-7 sm:py-[26px]"
+          : "ui-glass-card rounded-[22px] border border-line p-5 sm:px-7 sm:py-[26px]"}>
+          <div className="mb-4 flex items-start gap-3.5">
+            <span aria-hidden="true" className={result.is_prohibited ? "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#F7DEDC] text-[#B3443C]" : "flex h-[46px] w-[46px] shrink-0 items-center justify-center rounded-full bg-[#E7ECE9] text-muted"}>
               <Icon name={result.is_prohibited ? "alert" : "info"} size={20} />
             </span>
-            <h2 className={result.is_prohibited ? "text-lg font-bold text-[#9E3831]" : "text-lg font-bold text-ink"}>
+            <h2 className={result.is_prohibited ? "mt-0.5 text-xl font-bold text-[#9E3831]" : "mt-0.5 text-xl font-bold text-ink"}>
               {result.is_prohibited ? "병용금기 약물입니다" : "조회 범위에서 병용금기 항목 없음"}
             </h2>
           </div>
 
-          <div className="mb-4 grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))" }}>
-            <div className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-white p-3">
+          <div className="mb-4 grid gap-3.5" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))" }}>
+            <div className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-white px-4 py-3">
               <DrugImage drug={drug1} imageUrl={image1} size="sm" />
               <p className="min-w-0 break-keep break-words text-base font-semibold leading-snug text-ink">{drug1?.ITEM_NAME}</p>
             </div>
-            <div className="flex min-w-0 items-center gap-3 rounded-xl border border-line bg-white p-3">
+            <div className="flex min-w-0 items-center gap-2.5 rounded-2xl border border-line bg-white px-4 py-3">
               <DrugImage drug={drug2} imageUrl={image2} size="sm" />
               <p className="min-w-0 break-keep break-words text-base font-semibold leading-snug text-ink">{drug2?.ITEM_NAME}</p>
             </div>
@@ -266,7 +266,7 @@ export default function InteractionPage({ myDrugsHook }) {
             <div className="space-y-2">
               <p className="mb-2 text-xs font-bold text-[#B3443C]">조회된 금기 상세</p>
               {result.interactions.map((item, i) => (
-                <div key={i} className="rounded-xl border border-[#EFCAC7] bg-white p-4">
+                <div key={i} className="rounded-2xl border border-[#EFCAC7] bg-white px-5 py-[18px]">
                   <p className="break-keep break-words text-base font-semibold text-ink">
                     {item.INGR_KOR_NAME} ↔ {item.MIXTURE_INGR_KOR_NAME}
                   </p>

@@ -5,10 +5,10 @@ export default function SearchResultItem({ drug, onSelect }) {
     <button
       type="button"
       onClick={() => onSelect(drug)}
-      className="flex w-full items-center gap-3 rounded-xl border border-line bg-white p-3 text-left transition-colors hover:border-brand hover:bg-mint/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      className="ui-glass-card flex w-full items-center gap-4 rounded-[20px] border p-4 text-left transition-colors hover:border-brand hover:bg-mint/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:px-6 sm:py-5"
     >
-      <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#D8EFE1] bg-mint text-brand">
-        <Icon name="pill" size={21} />
+      <span aria-hidden="true" className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-brand/14 text-brand">
+        <Icon name="pill" size={24} />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block break-keep text-base font-semibold text-ink [overflow-wrap:anywhere]">{drug.ITEM_NAME}</span>
