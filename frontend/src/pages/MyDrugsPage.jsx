@@ -167,7 +167,7 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
                   ? "border-[#EEDFC3] bg-[#FDF8EE] text-[#815511]"
                   : "border-line bg-white/[.65] text-ink"
             }`}>
-              <Icon name={prohibitedCount > 0 || failedCount > 0 ? "alert" : "info"} size={19} className="shrink-0" />
+              <Icon name={prohibitedCount > 0 ? "noEntry" : failedCount > 0 ? "alert" : "info"} size={19} className="shrink-0" />
               <span className="min-w-0 break-keep">
                 {failedCount > 0
                   ? prohibitedCount > 0
@@ -195,7 +195,7 @@ export default function MyDrugsPage({ myDrugsHook, onGoSearch }) {
                 >
                   <div className="flex flex-wrap items-center gap-3">
                     <span aria-hidden="true" className={r.checkFailed ? "text-[#9A6A1C]" : r.is_prohibited ? "text-[#B3443C]" : "text-muted"}>
-                      <Icon name={r.checkFailed || r.is_prohibited ? "alert" : "info"} size={18} />
+                      <Icon name={r.is_prohibited ? "noEntry" : r.checkFailed ? "alert" : "info"} size={18} />
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="break-keep break-words text-base font-semibold text-ink">

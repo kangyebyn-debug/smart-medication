@@ -14,6 +14,7 @@ const shapes = {
   menu: <><path d="M4 6h16M4 12h16M4 18h16" /></>,
   check: <path d="m4.5 12.5 5 5 10-11" />,
   alert: <><path d="M10.3 3.8a2 2 0 0 1 3.4 0l8 13.5a2 2 0 0 1-1.7 3H4a2 2 0 0 1-1.7-3z" /><path d="M12 9v4.5M12 17h.01" /></>,
+  noEntry: <><circle cx="12" cy="12" r="9" /><path d="M5.8 5.8 18.2 18.2" /></>,
 };
 
 export default function Icon({ name, size = 20, className = "" }) {
