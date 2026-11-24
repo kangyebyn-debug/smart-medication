@@ -63,7 +63,7 @@ export default function AuthPage({ auth, notice }) {
 
   return (
     <section className="mx-auto w-full max-w-[620px] break-keep py-3 sm:py-8">
-      <p className="text-xs font-bold tracking-[0.16em] text-brand">계정</p>
+      <p className="text-xs font-bold text-brand">계정</p>
       <h1 className="mt-2 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
         {auth.session ? "내 계정" : "로그인하고 이어서 사용하세요"}
       </h1>
