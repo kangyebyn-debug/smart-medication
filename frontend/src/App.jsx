@@ -44,8 +44,8 @@ export default function App() {
   }
 
   const authLabel = auth.session ? "내 계정" : "로그인 · 회원가입";
-  const navItems = [...NAV_ITEMS, { page: "auth", label: authLabel, icon: "user" }];
-  const currentLabel = navItems.find((item) => item.page === page)?.label || "홈";
+  const navItems = NAV_ITEMS;
+  const currentLabel = page === "auth" ? authLabel : navItems.find((item) => item.page === page)?.label || "홈";
 
   return (
     <>
@@ -130,7 +130,7 @@ export default function App() {
                 <span className="font-semibold text-ink">{currentLabel}</span>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <HeaderAuth auth={auth} onSignIn={() => navigate("auth")} />
+                <HeaderAuth auth={auth} onSignIn={() => navigate("auth")} onOpenAccount={() => navigate("auth")} />
               </div>
             </header>
 
