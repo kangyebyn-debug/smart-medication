@@ -238,7 +238,7 @@ export default function LandingPage({ onNavigate, onSearch, isSignedIn }) {
               key={action.page}
               type="button"
               onClick={() => onNavigate(action.page)}
-              className="group flex min-h-56 flex-col items-start rounded-2xl border border-line bg-white p-6 text-left transition-[border-color,transform,box-shadow] hover:-translate-y-1 hover:border-brand/40 hover:shadow-[0_14px_32px_rgba(23,36,31,0.06)]"
+              className="elevated-card group flex min-h-56 flex-col items-start rounded-2xl border border-line bg-white p-6 text-left"
             >
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-mint text-brand">
                 <Icon name={action.icon} size={23} />
