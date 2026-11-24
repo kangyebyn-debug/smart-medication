@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routers import drugs, my_drugs
+from app.routers import drugs, my_drugs, profile
 
 app = FastAPI(title="Smart Medication API", version="0.1.0")
 
@@ -13,6 +13,7 @@ app.add_middleware(
 
 app.include_router(drugs.router)
 app.include_router(my_drugs.router)
+app.include_router(profile.router)
 
 
 @app.get("/")
