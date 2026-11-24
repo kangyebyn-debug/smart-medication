@@ -134,7 +134,7 @@ export default function App() {
               </div>
             </header>
 
-            <main id="main-content" className={`mx-auto w-full px-5 py-7 sm:px-8 sm:pb-[60px] sm:pt-9 ${page === "home" ? "max-w-none" : "max-w-[1150px]"}`}>
+            <main id="main-content" className={`w-full px-5 py-7 sm:px-8 sm:pb-[60px] sm:pt-9 ${page === "home" ? "max-w-none" : page === "auth" ? "mx-auto max-w-[1150px]" : "max-w-[1150px]"}`}>
               {page === "home" && (
                 <HomePage myDrugsHook={myDrugsHook} signedIn={Boolean(auth.session)} onNavigate={navigate} />
               )}
