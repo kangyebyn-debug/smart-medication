@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "../components/Icon";
+import HeroIllustration from "../components/HeroIllustration";
 
 const actions = [
   {
@@ -100,8 +101,9 @@ export default function LandingPage({ onNavigate, onSearch, isSignedIn }) {
         </header>
       </div>
 
-      <section className="relative overflow-hidden border-b border-line bg-white">
-        <div className="mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
+      <section className="landing-hero relative overflow-hidden border-b border-line">
+        <HeroIllustration />
+        <div className="relative mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
           <div className="max-w-[780px]">
             <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />

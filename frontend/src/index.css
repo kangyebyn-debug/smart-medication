@@ -91,6 +91,39 @@ button:disabled {
   gap: 20px;
 }
 
+.landing-hero {
+  background: linear-gradient(105deg, #FFFFFF 35%, #EAF6EF 76%, #D8EFE1 100%);
+}
+
+.hero-illustration {
+  position: absolute;
+  top: 0;
+  right: max(0px, calc((100vw - 1440px) / 2));
+  width: min(47vw, 660px);
+  height: 100%;
+  pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+  .landing-hero {
+    background: linear-gradient(105deg, #FFFFFF 45%, #EAF6EF 100%);
+  }
+
+  .hero-illustration {
+    right: -160px;
+    width: 520px;
+    opacity: 0.18;
+  }
+}
+
+@media (max-width: 600px) {
+  .hero-illustration {
+    top: -90px;
+    right: -250px;
+    opacity: 0.1;
+  }
+}
+
 @media (max-width: 900px) {
   .app-layout {
     align-content: flex-start;
