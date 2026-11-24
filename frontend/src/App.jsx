@@ -13,7 +13,7 @@ import AuthPage from "./pages/AuthPage";
 const NAV_ITEMS = [
   { page: "home", label: "홈", icon: "home" },
   { page: "search", label: "약품 검색", icon: "search" },
-  { page: "compare", label: "병용금기 확인", icon: "compare" },
+  { page: "compare", label: "병용금기 확인", icon: "noEntry" },
   { page: "my-drugs", label: "나의 약", icon: "bookmark" },
 ];
 
