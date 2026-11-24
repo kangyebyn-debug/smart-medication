@@ -72,3 +72,34 @@ export function addMyDrug(accessToken, drug) {
 export function deleteMyDrug(accessToken, id) {
   return myDrugsRequest(`/me/drugs/${encodeURIComponent(id)}`, accessToken, { method: "DELETE" });
 }
+
+async function profileRequest(accessToken, options = {}) {
+  const res = await fetch(`${BASE}/me/profile`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+    },
+  });
+  if (!res.ok) {
+    const error = new Error("프로필 요청 실패");
+    error.status = res.status;
+    throw error;
+  }
+  const profile = await res.json();
+  if (!profile || !(profile.display_name === null || typeof profile.display_name === "string")) {
+    throw new Error("프로필 응답 형식 오류");
+  }
+  return profile;
+}
+
+export function getMyProfile(accessToken) {
+  return profileRequest(accessToken);
+}
+
+export function updateMyProfile(accessToken, displayName) {
+  return profileRequest(accessToken, {
+    method: "PATCH",
+    body: JSON.stringify({ display_name: displayName.trim() || null }),
+  });
+}
