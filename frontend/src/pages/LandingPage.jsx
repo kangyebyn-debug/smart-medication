@@ -90,7 +90,7 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
               서비스 둘러보기
               <Icon name="arrowRight" size={17} />
             </button>
-            <HeaderAuth auth={auth} onSignIn={() => onNavigate("auth")} />
+            <HeaderAuth auth={auth} onSignIn={() => onNavigate("auth")} onOpenAccount={() => onNavigate("auth")} />
           </div>
         </header>
       </div>
