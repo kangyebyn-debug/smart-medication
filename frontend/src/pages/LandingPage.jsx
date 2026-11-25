@@ -99,17 +99,17 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
         <HeroIllustration />
         <div className="relative mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
           <div className="max-w-[780px]">
-            <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold tracking-[0.16em] text-brand">
+            <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />
-              공공 의약품 정보로 확인하는 첫걸음
+              AI 챗봇이 아니라, 공공 데이터 기반 확인
             </p>
             <h1 className="text-[clamp(2.3rem,6vw,5.4rem)] leading-[1.16] font-black tracking-[-0.075em] text-ink">
-              함께 먹는 약,<br />
-              <span className="text-brand">먼저 확인하세요.</span>
+              처방받은 약, 집에 있는 감기약이나<br />
+              <span className="text-brand">술과 같이 먹어도 될까요?</span>
             </h1>
             <p className="mt-7 max-w-[580px] text-base leading-8 text-muted sm:text-lg">
-              약 이름으로 효능과 용법을 찾고, 두 약 사이의 병용금기 항목을 조회할 수 있습니다.
-              검색과 확인에는 로그인이 필요하지 않습니다.
+              AI 챗봇에게 물어보는 짐작이 아니라, 식약처가 공개한 공공 DUR 데이터를 직접 조회해 답합니다.
+              처방약과 집에 있는 일반의약품을 함께 먹어도 되는지, 술을 곁들여도 되는지까지 확인할 수 있습니다.
             </p>
 
             <form onSubmit={submitSearch} className="mt-10 max-w-[720px]" role="search">
@@ -137,6 +137,7 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
                 </button>
               </div>
             </form>
+            <p className="mt-2 text-xs text-muted">로그인 없이 바로 검색하고 확인할 수 있습니다.</p>
             <p className="mt-4 flex items-start gap-2 text-base leading-7 text-muted">
               <Icon name="info" size={16} className="mt-0.5 shrink-0" />
               조회 결과는 공공자료의 확인 범위이며, 개인의 복용 안전성을 확정하지 않습니다.
