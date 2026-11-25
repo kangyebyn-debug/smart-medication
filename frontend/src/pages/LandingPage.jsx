@@ -104,12 +104,12 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
               AI 챗봇이 아니라, 공공 데이터 기반 확인
             </p>
             <h1 className="text-[clamp(2.3rem,6vw,5.4rem)] leading-[1.16] font-black tracking-[-0.075em] text-ink">
-              처방받은 약, 집에 있는 감기약이나<br />
-              <span className="text-brand">술과 같이 먹어도 될까요?</span>
+              처방받은 약, 집에 있는 감기약과<br />
+              <span className="text-brand">같이 먹어도 될까요?</span>
             </h1>
             <p className="mt-7 max-w-[580px] text-base leading-8 text-muted sm:text-lg">
               AI 챗봇에게 물어보는 짐작이 아니라, 식약처가 공개한 공공 DUR 데이터를 직접 조회해 답합니다.
-              처방약과 집에 있는 일반의약품을 함께 먹어도 되는지, 술을 곁들여도 되는지까지 확인할 수 있습니다.
+              처방약과 집에 있는 일반의약품을 함께 먹어도 되는지 확인할 수 있습니다.
             </p>
 
             <form onSubmit={submitSearch} className="mt-10 max-w-[720px]" role="search">
