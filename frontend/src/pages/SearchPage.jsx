@@ -213,7 +213,7 @@ export default function SearchPage({ myDrugsHook, initialQuery = "" }) {
                           aria-pressed={activeTab === tab.key}
                           onClick={() => setActiveTab(tab.key)}
                           className={activeTab === tab.key
-                            ? "inline-flex items-center gap-1.5 rounded-full border border-brand bg-mint px-4 py-2 text-[14.5px] font-semibold text-brand-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                            ? ["inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[14.5px] font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand", COLOR[tab.color].wrap, COLOR[tab.color].text].join(" ")
                             : "inline-flex items-center gap-1.5 rounded-full border border-line bg-white px-4 py-2 text-[14.5px] font-medium text-muted transition-colors hover:border-brand hover:text-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"}
                         >
                           <Icon name={tab.icon} size={14} />
