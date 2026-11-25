@@ -12,7 +12,7 @@ const actions = [
   },
   {
     page: "compare",
-    icon: "compare",
+    icon: "noEntry",
     title: "병용금기 확인",
     description: "두 약을 선택해 공공 DUR에 등록된 금기 항목을 조회하세요.",
   },

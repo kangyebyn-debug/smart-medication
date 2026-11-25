@@ -106,7 +106,7 @@ export default function InteractionPage({ myDrugsHook }) {
         <p className="break-keep text-base leading-[1.6] text-muted">두 약품을 선택하면 공공 DUR에서 조회되는 병용금기 항목을 확인합니다.</p>
       </header>
       <div className="ui-glass-card rounded-[22px] border p-5 sm:px-7 sm:py-[26px]">
-        <h2 className="flex items-center gap-2.5 text-[17px] font-bold text-ink"><Icon name="noEntry" size={20} className="text-brand" />비교할 약품</h2>
+        <h2 className="text-[17px] font-bold text-ink">비교할 약품</h2>
 
         <div className="mt-4 grid gap-[18px]" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))" }}>
           {/* 약품 1 */}
