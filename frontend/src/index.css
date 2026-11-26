@@ -266,13 +266,13 @@ button:disabled {
   }
 }
 
-@keyframes hero-scroll-bounce {
+@keyframes hero-scroll-pulse {
   0%, 100% {
-    transform: translateY(0);
+    opacity: 1;
   }
 
   50% {
-    transform: translateY(4px);
+    opacity: 0.45;
   }
 }
 
@@ -291,7 +291,7 @@ button:disabled {
   }
 
   .landing-hero .hero-scroll-cue {
-    animation: hero-scroll-bounce 2400ms ease-in-out infinite;
+    animation: hero-scroll-pulse 2400ms ease-in-out infinite;
   }
 }
 

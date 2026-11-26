@@ -110,8 +110,8 @@ export default function LandingPage({ onNavigate, auth }) {
               <Icon name="info" size={16} className="shrink-0" />
               조회 결과는 공공자료의 확인 범위이며, 개인의 복용 안전성을 확정하지 않습니다.
             </p>
-            <div className="mt-10 flex flex-col items-center gap-2 text-sm text-muted">
-              <span className="hero-scroll-cue" aria-hidden="true">
+            <div className="hero-scroll-cue mt-10 flex flex-col items-center gap-2 text-sm text-[#A9B6AF]">
+              <span aria-hidden="true">
                 <Icon name="chevronRight" size={20} className="rotate-90" />
               </span>
               <span>스크롤하여 확인하기</span>
