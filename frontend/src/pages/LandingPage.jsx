@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Icon from "../components/Icon";
 import HeroIllustration from "../components/HeroIllustration";
 import HeaderAuth from "../components/HeaderAuth";
@@ -49,7 +49,13 @@ const steps = [
 ];
 
 export default function LandingPage({ onNavigate, auth }) {
+  const mainRef = useRef(null);
   const [activeStep, setActiveStep] = useState(0);
+
+  useEffect(() => {
+    // 첫 키보드 스크롤도 문서가 아닌 랜딩 스크롤 영역에 전달한다.
+    if (document.activeElement === document.body) mainRef.current?.focus({ preventScroll: true });
+  }, []);
 
   function handleStepKeyDown(event, index) {
     let next;
@@ -65,33 +71,33 @@ export default function LandingPage({ onNavigate, auth }) {
   }
 
   return (
-    <main id="main-content" className="min-h-screen break-keep bg-surface text-ink">
-      <div className="border-b border-line bg-white">
-        <header className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-8 lg:px-12">
-          <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
-              <Icon name="pill" size={21} />
-            </span>
-            <span className="text-base font-bold tracking-[-0.035em]">스마트 메디케이션</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={() => onNavigate("home")}
-              className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand transition-colors hover:bg-mint sm:text-sm"
-            >
-              서비스 둘러보기
-              <Icon name="arrowRight" size={17} />
-            </button>
-            <HeaderAuth auth={auth} onSignIn={() => onNavigate("auth")} onOpenAccount={() => onNavigate("auth")} />
-          </div>
-        </header>
-      </div>
-
+    <main id="main-content" ref={mainRef} tabIndex={0} className="landing-page break-keep bg-surface text-ink">
       <section className="landing-hero relative overflow-hidden border-b border-line">
+        <div className="relative z-10 shrink-0 border-b border-line bg-white">
+          <header className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-8 lg:px-12">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-white">
+                <Icon name="pill" size={21} />
+              </span>
+              <span className="text-base font-bold tracking-[-0.035em]">스마트 메디케이션</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => onNavigate("home")}
+                className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold text-brand transition-colors hover:bg-mint sm:text-sm"
+              >
+                서비스 둘러보기
+                <Icon name="arrowRight" size={17} />
+              </button>
+              <HeaderAuth auth={auth} onSignIn={() => onNavigate("auth")} onOpenAccount={() => onNavigate("auth")} />
+            </div>
+          </header>
+        </div>
+
         <HeroIllustration />
-        <div className="relative mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
-          <div className="mx-auto max-w-[900px] text-center">
+        <div className="landing-hero-content relative mx-auto max-w-[1320px] px-5 py-8 sm:px-8 sm:py-12 lg:px-12">
+          <div className="mx-auto w-full max-w-[900px] text-center">
             <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />
               AI 챗봇이 아니라, 공공 데이터 기반 확인
@@ -222,28 +228,30 @@ export default function LandingPage({ onNavigate, auth }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12 lg:pb-24" aria-labelledby="ai-preview-title">
-        <div className="flex flex-wrap items-center justify-between gap-10 rounded-[24px] bg-sidebar px-7 py-9 text-white sm:px-10 sm:py-11">
-          <div className="max-w-[650px]">
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/75">
-              <Icon name="sparkles" size={14} />
-              개발 중인 기능
+      <div className="landing-final-page">
+        <section className="mx-auto w-full max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12 lg:pb-24" aria-labelledby="ai-preview-title">
+          <div className="flex flex-wrap items-center justify-between gap-10 rounded-[24px] bg-sidebar px-7 py-9 text-white sm:px-10 sm:py-11">
+            <div className="max-w-[650px]">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/75">
+                <Icon name="sparkles" size={14} />
+                개발 중인 기능
+              </div>
+              <h2 id="ai-preview-title" className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">복약 질문 AI</h2>
+              <p className="mt-3 text-base leading-7 text-white/70">
+                등록한 약을 기준으로 구어체 질문에 답하고 공공자료의 근거를 함께 보여주는 기능을 준비하고 있습니다.
+              </p>
             </div>
-            <h2 id="ai-preview-title" className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">복약 질문 AI</h2>
-            <p className="mt-3 text-base leading-7 text-white/70">
-              등록한 약을 기준으로 구어체 질문에 답하고 공공자료의 근거를 함께 보여주는 기능을 준비하고 있습니다.
-            </p>
+            <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white/85">
+              <Icon name="info" size={17} />
+              준비 중
+            </span>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white/85">
-            <Icon name="info" size={17} />
-            준비 중
-          </span>
-        </div>
-      </section>
+        </section>
 
-      <footer className="border-t border-line bg-white px-5 py-6 text-center text-xs text-muted">
-        스마트 메디케이션 · 공공 의약품 정보를 이해하기 쉽게 확인하는 개인 프로젝트
-      </footer>
+        <footer className="border-t border-line bg-white px-5 py-6 text-center text-xs text-muted">
+          스마트 메디케이션 · 공공 의약품 정보를 이해하기 쉽게 확인하는 개인 프로젝트
+        </footer>
+      </div>
     </main>
   );
 }

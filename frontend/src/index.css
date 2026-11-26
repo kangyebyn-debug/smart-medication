@@ -250,8 +250,50 @@ button:disabled {
   }
 }
 
+.landing-page {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+}
+
+/* 스크롤 영역의 초기 포커스는 테두리 없이 두고, 내부 컨트롤의 포커스 표시는 유지한다. */
+.landing-page:focus-visible {
+  outline: none !important;
+}
+
+.landing-page > section,
+.landing-final-page,
+.landing-final-page > section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 .landing-hero {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(105deg, #FFFFFF 35%, #EAF6EF 76%, #D8EFE1 100%);
+}
+
+.landing-hero-content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  width: 100%;
+}
+
+/* 마지막 섹션도 화면 위에 맞추고 푸터까지 접근할 수 있는 스크롤 길이를 확보한다. */
+.landing-final-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.landing-final-page > footer {
+  margin-top: auto;
 }
 
 @keyframes hero-line-reveal {
