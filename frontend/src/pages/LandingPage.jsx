@@ -48,15 +48,8 @@ const steps = [
   },
 ];
 
-export default function LandingPage({ onNavigate, onSearch, auth }) {
-  const [query, setQuery] = useState("");
+export default function LandingPage({ onNavigate, auth }) {
   const [activeStep, setActiveStep] = useState(0);
-
-  function submitSearch(event) {
-    event.preventDefault();
-    const name = query.trim();
-    if (name) onSearch(name);
-  }
 
   function handleStepKeyDown(event, index) {
     let next;
@@ -98,47 +91,22 @@ export default function LandingPage({ onNavigate, onSearch, auth }) {
       <section className="landing-hero relative overflow-hidden border-b border-line">
         <HeroIllustration />
         <div className="relative mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
-          <div className="max-w-[780px]">
+          <div className="mx-auto max-w-[780px] text-center">
             <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />
               AI 챗봇이 아니라, 공공 데이터 기반 확인
             </p>
-            <h1 className="text-[clamp(2.3rem,6vw,5.4rem)] leading-[1.16] font-black tracking-[-0.075em] text-ink">
-              처방받은 약, 집에 있는 감기약과<br />
-              <span className="text-brand">같이 먹어도 될까요?</span>
+            <h1 className="font-black tracking-[-0.075em] text-ink">
+              <span className="hero-line hero-line-1 block text-[clamp(2.6rem,7vw,5.8rem)] leading-[1.16]">처방받은 약,</span>
+              <span className="hero-line hero-line-2 block text-[clamp(2rem,5vw,4rem)] leading-[1.2]">집에 있는 감기약과</span>
+              <span className="hero-line hero-line-3 block text-[clamp(2rem,5vw,4rem)] leading-[1.2] text-brand">같이 먹어도 될까요?</span>
             </h1>
-            <p className="mt-7 max-w-[580px] text-base leading-8 text-muted sm:text-lg">
+            <p className="mx-auto mt-7 max-w-[580px] text-base leading-8 text-muted sm:text-lg">
               AI 챗봇에게 물어보는 짐작이 아니라, 식약처가 공개한 공공 DUR 데이터를 직접 조회해 답합니다.
               처방약과 집에 있는 일반의약품을 함께 먹어도 되는지 확인할 수 있습니다.
             </p>
 
-            <form onSubmit={submitSearch} className="mt-10 max-w-[720px]" role="search">
-              <label htmlFor="landing-drug-name" className="mb-3 block text-sm font-semibold text-ink">
-                어떤 약이 궁금한가요?
-              </label>
-              <div className="flex flex-col gap-3 rounded-2xl border border-line bg-white p-2 shadow-[0_16px_45px_rgba(23,36,31,0.08)] focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15 sm:flex-row sm:items-center sm:gap-0">
-                <Icon name="search" size={22} className="ml-4 hidden shrink-0 text-brand sm:block" />
-                <input
-                  id="landing-drug-name"
-                  type="search"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="약 이름을 입력하세요. 예: 타이레놀"
-                  autoComplete="off"
-                  required
-                  className="min-w-0 flex-1 rounded-xl px-4 py-3 text-base text-ink placeholder:text-muted/70 focus:outline-none sm:py-2"
-                />
-                <button
-                  type="submit"
-                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-[9px] bg-brand px-6 text-sm font-bold text-white transition-colors hover:bg-brand-dark"
-                >
-                  약품 검색
-                  <Icon name="arrowRight" size={18} />
-                </button>
-              </div>
-            </form>
-            <p className="mt-2 text-xs text-muted">로그인 없이 바로 검색하고 확인할 수 있습니다.</p>
-            <p className="mt-4 flex items-start gap-2 text-base leading-7 text-muted">
+            <p className="mt-4 flex items-start justify-center gap-2 text-base leading-7 text-muted">
               <Icon name="info" size={16} className="mt-0.5 shrink-0" />
               조회 결과는 공공자료의 확인 범위이며, 개인의 복용 안전성을 확정하지 않습니다.
             </p>

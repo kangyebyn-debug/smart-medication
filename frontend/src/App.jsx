@@ -51,7 +51,7 @@ export default function App() {
     <>
       <a href="#main-content" className="skip-link">본문으로 건너뛰기</a>
       {page === "landing" ? (
-        <LandingPage onNavigate={navigate} onSearch={(query) => navigate("search", query)} auth={auth} />
+        <LandingPage onNavigate={navigate} auth={auth} />
       ) : (
         <div className={`app-layout${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
           <aside id="app-sidebar" className="app-sidebar text-ink" aria-label="앱 내비게이션">
