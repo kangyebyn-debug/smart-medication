@@ -304,6 +304,15 @@ button:disabled {
   pointer-events: none;
 }
 
+.hero-illustration-left {
+  position: absolute;
+  top: 0;
+  left: max(0px, calc((100vw - 1440px) / 2));
+  width: min(26vw, 360px);
+  height: 100%;
+  pointer-events: none;
+}
+
 @media (max-width: 1100px) {
   .landing-hero {
     background: linear-gradient(105deg, #FFFFFF 45%, #EAF6EF 100%);
@@ -313,6 +322,10 @@ button:disabled {
     right: -160px;
     width: 520px;
     opacity: 0.18;
+  }
+
+  .hero-illustration-left {
+    display: none;
   }
 }
 
