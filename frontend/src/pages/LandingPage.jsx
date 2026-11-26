@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Icon from "../components/Icon";
 import HeroIllustration from "../components/HeroIllustration";
 import HeaderAuth from "../components/HeaderAuth";
+import LandingConversation from "../components/LandingConversation";
 
 const actions = [
   {
@@ -125,6 +126,8 @@ export default function LandingPage({ onNavigate, auth }) {
           </div>
         </div>
       </section>
+
+      <LandingConversation />
 
       <section tabIndex={0} className="border-b border-line bg-white" aria-labelledby="landing-how-title">
         <div className="mx-auto max-w-[1320px] px-5 py-14 sm:px-8 lg:px-12 lg:py-16">
