@@ -262,14 +262,14 @@ class DrugWarningsTests(unittest.IsolatedAsyncioTestCase):
 
 class DrugCheckTests(unittest.IsolatedAsyncioTestCase):
     async def test_valid_empty_response_keeps_not_prohibited_shape(self):
-        with patch("app.routers.drugs.get_interactions_by_item_name", new_callable=AsyncMock, return_value=[]):
+        with patch("app.services.interactions.get_interactions_by_item_name", new_callable=AsyncMock, return_value=[]):
             result = await check_interaction("테스트약정", "다른약정")
 
         self.assertEqual(result["is_prohibited"], False)
         self.assertEqual(set(result), {"drug1", "drug2", "is_prohibited", "message"})
 
     async def test_upstream_failure_returns_http_502_without_error_details(self):
-        with patch("app.routers.drugs.get_interactions_by_item_name", new_callable=AsyncMock,
+        with patch("app.services.interactions.get_interactions_by_item_name", new_callable=AsyncMock,
                    side_effect=DURResponseError("private upstream response")):
             async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
                 response = await client.get("/drugs/check", params={"drug1": "테스트약정", "drug2": "다른약정"})
