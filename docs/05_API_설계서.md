@@ -74,7 +74,7 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 
 ## 4. 복약 질문 AI API (Phase 3 백엔드 구현 — 로그인 필요, ★메인 기능)
 
-`backend/app/routers/chat.py`, `app/services/chat_evidence.py`·`gemini_chat.py`·`chat_store.py`, `app/config.py`, `app/main.py`를 직접 확인한 로컬 구현 계약입니다 (2026.11.26). **등록된 약의 실제 공공 DUR 병용금기 조회 결과만 설명**하며, Phase 4의 RAG·Pinecone·전체 의약품 검색, 스트리밍, 프런트 채팅 화면은 구현하지 않습니다. 아래의 "구현됨"은 실제 사용자 JWT·Supabase 권한·Gemini 실호출 검증 완료를 뜻하지 않습니다.
+`backend/app/routers/chat.py`, `app/services/chat_evidence.py`·`gemini_chat.py`·`chat_store.py`, `app/config.py`, `app/main.py`를 직접 확인한 로컬 구현 계약입니다 (2026.11.26). **등록된 약의 실제 공공 DUR 병용금기 조회 결과만 설명**하며, Phase 4의 RAG·Pinecone·전체 의약품 검색, 스트리밍, 프런트 채팅 화면은 구현하지 않습니다. 아래의 "구현됨"은 코드 상태이며, 실제 검증 범위와 확인 주체는 아래에 별도로 기록합니다.
 
 | 메서드 | 경로 | 요청 | 성공 응답 | 상태 |
 |---|---|---|---|---|
@@ -106,7 +106,7 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - `GEMINI_API_KEY`는 사용자가 직접 발급해 `backend/.env`에 설정합니다. 키 값은 문서·코드·로그·커밋에 남기지 않습니다. 선택 환경변수 `GEMINI_MODEL`이 없거나 비어 있으면 `gemini-3.5-flash-lite`를 사용합니다. Google 공식 [모델 목록](https://ai.google.dev/gemini-api/docs/models)과 [가격표](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-flash-lite)에서 해당 Flash-Lite 모델·무료 티어를 확인한 기준일은 **2026.11.26**이며, 모델 제공 여부·쿼터는 변할 수 있습니다. 무거운 SDK 없이 기존 `httpx`로 REST `generateContent`를 호출합니다.
 - Gemini 무료 서비스에는 [공식 약관](https://ai.google.dev/gemini-api/terms#unpaid-services)의 민감·기밀·개인정보 입력 금지 및 데이터 이용 조건이 적용됩니다. 사용자 ID·JWT를 제외하더라도 질문과 약 목록 자체가 건강정보를 포함할 수 있으므로 **이번 무료 티어 실호출 검증은 개인정보 없는 가상 약 목록·가상 질문으로만** 진행합니다. 실제 개인 건강정보를 무료 티어로 보내도 된다는 의미가 아닙니다.
 - `backend/supabase/migrations/0004_chat_tables.sql`에 `chat_sessions`·`chat_messages`, RLS 본인 SELECT/INSERT 정책, `grant select, insert on public.chat_sessions, public.chat_messages to authenticated;`를 함께 포함합니다. 메시지의 본인 여부는 부모 세션 소유자로 확인합니다. **사용자가 Supabase SQL Editor에서 직접 실행하며, 에이전트는 DB에 대신 실행하지 않습니다.**
-- 실제 로그인 JWT로 로컬 Swagger에서 세션 생성·목록·메시지 조회·전송, 저장약 2개 미만/이상, 타인 세션 접근, GRANT 적용 전후 상태 및 Gemini 실호출을 확인하는 절차는 **아직 미검증**입니다. 모의 테스트 성공을 실제 Supabase 권한 또는 Google API 성공으로 간주하지 않습니다. GRANT가 이미 포함된 파일이므로 적용 전 오류가 반드시 `403`이라고 단정하지 않으며, 실제 상태 코드·응답만 기록해야 합니다.
+- 실제 검증 (2026.11.26): 사용자가 로컬 Swagger에서 **세션 생성, 저장약 2개 미만의 고정 안내, 2개 이상의 실제 DUR 근거 기반 Gemini 응답까지 정상 동작함을 확인**하고 이번 백엔드 라운드를 승인했습니다. 에이전트도 개인정보 없는 가상 근거·질문으로 Gemini 서비스의 실제 호출·응답 성공을 별도로 확인했습니다. 세션 목록·메시지 이력 조회·타인 세션 접근 및 GRANT 적용 전후의 개별 상태 코드·응답은 별도 실검증 기록이 없으므로 성공으로 확대 해석하지 않습니다. 모의 테스트 성공을 실제 Supabase 권한 또는 Google API 성공으로 간주하지 않으며, GRANT 적용 전 오류가 반드시 `403`이라고 단정하지 않습니다.
 - 로컬 검증 (2026.11.26): 전체 백엔드 자동 테스트 **109개 통과**. 채팅 통합 테스트는 생성한 ES256 키·오프라인 JWKS와 모의 HTTP 응답으로 인증부터 근거 수집·Gemini 응답 검증·벌크 저장까지 실행했습니다. 실제 `http://localhost:8000/docs`에서도 새 4개 작업의 표시와 미인증 실행 시 모두 `401` 및 `WWW-Authenticate: Bearer`를 확인했습니다. 실제 계정 성공 흐름과는 별개의 결과입니다.
 
 ### 오류 응답
