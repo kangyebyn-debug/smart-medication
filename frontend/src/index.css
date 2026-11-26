@@ -266,6 +266,16 @@ button:disabled {
   }
 }
 
+@keyframes hero-scroll-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(4px);
+  }
+}
+
 /* 모션 감소 설정에서는 지연이나 숨김 없이 기본 상태로 바로 표시한다. */
 @media (prefers-reduced-motion: no-preference) {
   .landing-hero .hero-line {
@@ -278,6 +288,10 @@ button:disabled {
 
   .landing-hero .hero-line-3 {
     animation-delay: 360ms;
+  }
+
+  .landing-hero .hero-scroll-cue {
+    animation: hero-scroll-bounce 2400ms ease-in-out infinite;
   }
 }
 
