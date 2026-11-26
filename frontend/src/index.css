@@ -263,15 +263,15 @@ button:disabled {
 }
 
 .landing-page > section,
-.landing-final-page,
-.landing-final-page > section {
+.landing-final-page {
+  height: 100vh;
+  height: 100dvh;
+  overflow-y: auto;
   scroll-snap-align: start;
   scroll-snap-stop: always;
 }
 
 .landing-hero {
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: linear-gradient(105deg, #FFFFFF 35%, #EAF6EF 76%, #D8EFE1 100%);
@@ -284,10 +284,8 @@ button:disabled {
   width: 100%;
 }
 
-/* 마지막 섹션도 화면 위에 맞추고 푸터까지 접근할 수 있는 스크롤 길이를 확보한다. */
+/* 마지막 한 화면 안에서 AI 안내와 푸터를 함께 스크롤한다. */
 .landing-final-page {
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }

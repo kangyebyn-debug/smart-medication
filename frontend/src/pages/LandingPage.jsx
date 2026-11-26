@@ -72,7 +72,7 @@ export default function LandingPage({ onNavigate, auth }) {
 
   return (
     <main id="main-content" ref={mainRef} tabIndex={0} className="landing-page break-keep bg-surface text-ink">
-      <section className="landing-hero relative overflow-hidden border-b border-line">
+      <section tabIndex={0} className="landing-hero relative overflow-hidden border-b border-line">
         <div className="relative z-10 shrink-0 border-b border-line bg-white">
           <header className="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-8 lg:px-12">
             <div className="flex items-center gap-3">
@@ -126,7 +126,7 @@ export default function LandingPage({ onNavigate, auth }) {
         </div>
       </section>
 
-      <section className="border-b border-line bg-white" aria-labelledby="landing-how-title">
+      <section tabIndex={0} className="border-b border-line bg-white" aria-labelledby="landing-how-title">
         <div className="mx-auto max-w-[1320px] px-5 py-14 sm:px-8 lg:px-12 lg:py-16">
           <p className="text-xs font-bold text-brand">사용 방법</p>
           <h2 id="landing-how-title" className="mt-2 text-2xl font-bold tracking-[-0.045em] text-ink sm:text-3xl">
@@ -197,7 +197,7 @@ export default function LandingPage({ onNavigate, auth }) {
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20" aria-labelledby="landing-actions-title">
+      <section tabIndex={0} className="mx-auto max-w-[1320px] px-5 py-16 sm:px-8 lg:px-12 lg:py-20" aria-labelledby="landing-actions-title">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-bold text-brand">바로 시작하기</p>
@@ -228,7 +228,7 @@ export default function LandingPage({ onNavigate, auth }) {
         </div>
       </section>
 
-      <div className="landing-final-page">
+      <div tabIndex={0} className="landing-final-page" role="region" aria-labelledby="ai-preview-title">
         <section className="mx-auto w-full max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12 lg:pb-24" aria-labelledby="ai-preview-title">
           <div className="flex flex-wrap items-center justify-between gap-10 rounded-[24px] bg-sidebar px-7 py-9 text-white sm:px-10 sm:py-11">
             <div className="max-w-[650px]">
