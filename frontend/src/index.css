@@ -254,6 +254,33 @@ button:disabled {
   background: linear-gradient(105deg, #FFFFFF 35%, #EAF6EF 76%, #D8EFE1 100%);
 }
 
+@keyframes hero-line-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 모션 감소 설정에서는 지연이나 숨김 없이 기본 상태로 바로 표시한다. */
+@media (prefers-reduced-motion: no-preference) {
+  .landing-hero .hero-line {
+    animation: hero-line-reveal 600ms ease-out both;
+  }
+
+  .landing-hero .hero-line-2 {
+    animation-delay: 180ms;
+  }
+
+  .landing-hero .hero-line-3 {
+    animation-delay: 360ms;
+  }
+}
+
 .hero-illustration {
   position: absolute;
   top: 0;
