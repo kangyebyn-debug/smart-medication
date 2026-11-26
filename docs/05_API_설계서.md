@@ -1,6 +1,6 @@
 # 스마트 메디케이션 API 설계서
 
-- 작성일: 2026.11.18 / 2026.11.20 / 2026.11.24 / 2026.11.26 (Phase 3 복약 질문 AI 백엔드 API 구현 반영)
+- 작성일: 2026.11.18 / 2026.11.20 / 2026.11.24 / 2026.11.26 (Phase 3 복약 질문 AI 백엔드 API·프론트 연결 반영)
 - 관련 문서: `01_기획서_v3.md`, `02_설계서_아키텍처_보안.md`, `03_DB_설계서.md`
 - 성격: 백엔드(FastAPI, Render 배포) API 명세. **"상태" 열에서 "구현됨"은 로컬 저장소(`D:\Project_KYB\smart-medication\backend`) 코드를 직접 열어 확인한 것만 표기하며, 그 외는 01 기획서 로드맵(Phase 2~5)에 따른 설계안(미구현)입니다.**
 
@@ -72,16 +72,16 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - 실제 권한 확인 (2026.11.24): 사용자가 유효한 사용자 JWT로 로컬 Swagger의 `GET /me/profile`을 호출하여 `403` 및 `"프로필 저장소 접근 권한이 없습니다."` 응답을 직접 확인했습니다. 이에 `backend/supabase/migrations/0003_profiles_authenticated_grant.sql`에 `grant select, update on public.profiles to authenticated;`를 추가했으며, 기존 RLS는 유지합니다. 사용자가 Supabase SQL Editor에서 GRANT를 실행한 뒤 다시 조회하여 **`200 OK` 및 `{ "display_name": null }` 응답(표시 이름 미설정)을 확인했습니다.** 실제 계정의 `PATCH /me/profile`과 나의 약 전체 삭제는 운영 DB에서 테스트하지 않았습니다.
 - 나의 약 목록 초기화는 기존 `DELETE /me/drugs/{id}` 반복 호출을 사용하며 새 초기화 엔드포인트는 추가하지 않습니다. 이메일·비밀번호 변경 및 계정 삭제 API는 이번 구현 범위가 아닙니다.
 
-## 4. 복약 질문 AI API (Phase 3 백엔드 구현 — 로그인 필요, ★메인 기능)
+## 4. 복약 질문 AI API (Phase 3 백엔드·프론트 연결 구현 — 로그인 필요, ★메인 기능)
 
-`backend/app/routers/chat.py`, `app/services/chat_evidence.py`·`gemini_chat.py`·`chat_store.py`, `app/config.py`, `app/main.py`를 직접 확인한 로컬 구현 계약입니다 (2026.11.26). **등록된 약의 실제 공공 DUR 병용금기 조회 결과만 설명**하며, Phase 4의 RAG·Pinecone·전체 의약품 검색, 스트리밍, 프런트 채팅 화면은 구현하지 않습니다. 아래의 "구현됨"은 코드 상태이며, 실제 검증 범위와 확인 주체는 아래에 별도로 기록합니다.
+`backend/app/routers/chat.py`, `app/services/chat_evidence.py`·`gemini_chat.py`·`chat_store.py`, `app/config.py`, `app/main.py`와 `frontend/src/api.js`, `hooks/useChat.js`, `pages/ChatPage.jsx`, `App.jsx`, `pages/LandingPage.jsx`를 직접 확인한 로컬 구현 계약입니다 (2026.11.26). **등록된 약의 실제 공공 DUR 병용금기 조회 결과만 설명**하며, 로그인 전용 채팅 화면과 사이드바·랜딩 진입점을 연결했습니다. Phase 4의 RAG·Pinecone·전체 의약품 검색, 스트리밍, 여러 세션을 관리하는 UI는 구현하지 않습니다. 아래의 "구현됨"은 코드 상태이며, 실제 검증 범위와 확인 주체는 아래에 별도로 기록합니다.
 
 | 메서드 | 경로 | 요청 | 성공 응답 | 상태 |
 |---|---|---|---|---|
-| POST | `/chat/sessions` | Bearer JWT · JSON `{ "title": "..." }` 또는 `{ "title": null }` (본문·필드 생략 가능) | `201` · 세션 한 건 (`id`, `title`, `created_at`) | **구현됨** |
-| GET | `/chat/sessions` | Bearer JWT | `200` · 본인 세션 전체 배열, `created_at.desc,id.desc` 순 | **구현됨** |
-| GET | `/chat/sessions/{id}/messages` | Bearer JWT · 세션 ID(UUID) | `200` · 해당 세션 메시지 전체 배열 (`id`, `session_id`, `role`, `content`, `created_at`), `created_at.asc,id.asc` 순 | **구현됨** |
-| POST | `/chat/sessions/{id}/messages` | Bearer JWT · JSON `{ "content": "질문" }` | `201` · 저장된 **assistant 메시지 한 건** (`id`, `session_id`, `role`, `content`, `created_at`) | **구현됨** |
+| POST | `/chat/sessions` | Bearer JWT · JSON `{ "title": "..." }` 또는 `{ "title": null }` (본문·필드 생략 가능) | `201` · 세션 한 건 (`id`, `title`, `created_at`) | **구현됨 · 프론트 연결** |
+| GET | `/chat/sessions` | Bearer JWT | `200` · 본인 세션 전체 배열, `created_at.desc,id.desc` 순 | **구현됨 · 프론트 연결** |
+| GET | `/chat/sessions/{id}/messages` | Bearer JWT · 세션 ID(UUID) | `200` · 해당 세션 메시지 전체 배열 (`id`, `session_id`, `role`, `content`, `created_at`), `created_at.asc,id.asc` 순 | **구현됨 · 프론트 연결** |
+| POST | `/chat/sessions/{id}/messages` | Bearer JWT · JSON `{ "content": "질문" }` | `201` · 저장된 **assistant 메시지 한 건** (`id`, `session_id`, `role`, `content`, `created_at`) | **구현됨 · 프론트 연결** |
 
 ### 요청·소유권·저장 계약
 
@@ -90,6 +90,14 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - 메시지 조회·전송 전 세션 ID와 JWT 사용자 ID를 함께 필터링하여 소유권을 확인합니다. 없는 세션과 RLS로 보이지 않는 타인 세션은 동일한 `404`(`대화 세션을 찾을 수 없습니다.`)로 처리합니다.
 - 세션·메시지 목록은 `limit=100`으로 페이지를 읽고 실제 응답 개수만큼 offset을 누적하여 **빈 페이지까지** 조회합니다. Supabase 행 수 상한으로 짧게 반환된 페이지를 마지막으로 추정하지 않으며, 별도 총건수 추정이나 사용자 지정 페이지 파라미터는 없습니다.
 - 질문·응답은 답변이 준비된 뒤 한 번의 PostgREST 벌크 INSERT로 두 행을 함께 저장합니다. DUR 조회 또는 Gemini 생성 실패 시 두 메시지 모두 저장하지 않습니다. INSERT 자체는 하나의 DB 트랜잭션으로 처리하므로 한 행만 저장되는 반쪽 대화를 만들지 않습니다. 다만 저장 후 네트워크 응답 유실은 커밋 여부를 알 수 없으므로 오류 응답이 항상 미저장을 뜻하지는 않으며, 자동 재전송·중복 제거 기능은 없습니다.
+
+### 프론트 연결·상태 처리
+
+- `api.js`의 `createChatSession`·`listChatSessions`·`listChatMessages`·`sendChatMessage`가 위 네 API를 Bearer JWT로 호출합니다. 생성 요청은 본문 없이, 전송 요청은 `{ "content": "질문" }`만 보냅니다. HTTP 상태 코드를 유지하고 JSON·최소 응답 형태가 잘못되면 `502`로 처리합니다.
+- 사이드바의 "복약 질문 AI"와 랜딩 배너의 "복약 질문 AI 시작하기"로 진입합니다. 비로그인 상태면 기존 "나의 약"과 같은 로그인 안내 패턴을 사용합니다. `useChat`은 요청 전 현재 세션의 사용자 ID와 토큰을 확인하며, `pendingRef`·`generationRef`로 중복 요청과 계정 전환·화면 이탈 뒤의 늦은 응답 반영을 막습니다. 사용자 ID가 바뀌면 이전 이력과 입력 초안도 노출하지 않습니다.
+- 최초 진입·재진입 시 서버 목록 첫 행인 **가장 최근 생성된 세션**을 재사용합니다(마지막 메시지 활동순이 아님). 정상 빈 목록일 때만 새 세션을 생성하며, 목록 조회 실패를 빈 목록으로 간주하지 않습니다. 세션 관리 UI 없이 저장 이력을 이어 볼 수 있도록 선택한 방식입니다. 새로고침 후에는 메뉴로 다시 진입해야 하며, LLM에 과거 이력을 전달하는 기능은 추가하지 않았습니다.
+- 메시지 전송 중 입력·버튼을 비활성화하고 대기 상태를 표시합니다. POST 성공 후 이력을 다시 조회해 서버에 함께 저장된 사용자·AI 메시지를 표시하고 초안을 비웁니다. AI 응답은 일반 텍스트로 줄바꿈을 보존하며, HTML로 해석하거나 서버 면책 문구를 중복 추가하지 않습니다.
+- `401` 만료, `403` 권한 거절, `429` 한도 초과, `502` 조회/서비스 오류, `503` 서비스 이용 불가를 한국어로 안내하며 자동 재전송하지 않습니다. POST의 `502`·네트워크 오류는 저장 여부가 불확실하므로 초안을 보존하고, 이력을 다시 읽기 전 추가 전송을 잠급니다. POST 성공 후 이력 조회만 실패한 경우에는 저장 완료를 안내하고 초안을 비운 뒤, 재조회 전 추가 전송을 잠가 같은 질문의 중복 전송을 방지합니다.
 
 ### 근거 수집·Gemini 설명 흐름과 한계
 
@@ -108,6 +116,7 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - `backend/supabase/migrations/0004_chat_tables.sql`에 `chat_sessions`·`chat_messages`, RLS 본인 SELECT/INSERT 정책, `grant select, insert on public.chat_sessions, public.chat_messages to authenticated;`를 함께 포함합니다. 메시지의 본인 여부는 부모 세션 소유자로 확인합니다. **사용자가 Supabase SQL Editor에서 직접 실행하며, 에이전트는 DB에 대신 실행하지 않습니다.**
 - 실제 검증 (2026.11.26): 사용자가 로컬 Swagger에서 **세션 생성, 저장약 2개 미만의 고정 안내, 2개 이상의 실제 DUR 근거 기반 Gemini 응답까지 정상 동작함을 확인**하고 이번 백엔드 라운드를 승인했습니다. 에이전트도 개인정보 없는 가상 근거·질문으로 Gemini 서비스의 실제 호출·응답 성공을 별도로 확인했습니다. 세션 목록·메시지 이력 조회·타인 세션 접근 및 GRANT 적용 전후의 개별 상태 코드·응답은 별도 실검증 기록이 없으므로 성공으로 확대 해석하지 않습니다. 모의 테스트 성공을 실제 Supabase 권한 또는 Google API 성공으로 간주하지 않으며, GRANT 적용 전 오류가 반드시 `403`이라고 단정하지 않습니다.
 - 로컬 검증 (2026.11.26): 전체 백엔드 자동 테스트 **109개 통과**. 채팅 통합 테스트는 생성한 ES256 키·오프라인 JWKS와 모의 HTTP 응답으로 인증부터 근거 수집·Gemini 응답 검증·벌크 저장까지 실행했습니다. 실제 `http://localhost:8000/docs`에서도 새 4개 작업의 표시와 미인증 실행 시 모두 `401` 및 `WWW-Authenticate: Bearer`를 확인했습니다. 실제 계정 성공 흐름과는 별개의 결과입니다.
+- 프론트 로컬 검증 (2026.11.26): `npm run lint`·`npm run build` 통과(번들 500 kB 초과 경고 있음). API 함수의 모의 fetch 계약 검사 18개와 격리된 브라우저의 가상 인증·가상 API 검증을 수행했습니다. 비로그인 진입 차단, 최신 세션 재사용, StrictMode 빈 목록의 세션 1회 생성, 동기 중복 제출의 POST 1회, 정상 전송·이력 복원, `401`·`429`·`502`·`503` 안내와 재조회 복구, 계정 전환·로그아웃 시 이력/초안 격리, Enter·한글 IME, HTML 형태 내용의 일반 텍스트 표시를 확인했습니다. 320·390·1440px에서 긴 메시지의 가로 넘침도 없었습니다. **이번 프론트 검증은 실제 Supabase 로그인·DB·Gemini를 연결한 종단 간 성공 검증이 아니며**, 위 사용자 확인 백엔드 결과와 구분합니다. 무료 티어 실검증을 이어갈 때도 가상 약·가상 질문만 사용해야 합니다.
 
 ### 오류 응답
 
@@ -151,5 +160,6 @@ Phase 2에 구현한 API로 `03_DB_설계서.md`의 `saved_drugs` 테이블과 �
 - 로컬 `app/routers/profile.py`, `app/services/profile.py`, `app/auth.py`, `tests/test_profile.py` 직접 확인 (2026.11.24) — 3-1절 프로필 계약·인증·오류 처리·모의 테스트 범위 근거. 실제 Supabase GRANT 확인 결과를 의미하지 않음
 - Supabase 공식 JWT/Signing Keys 및 API Keys 가이드 — JWKS 검증과 사용자 JWT·publishable key 헤더 조합 근거
 - 로컬 `app/routers/chat.py`, `app/services/chat_evidence.py`·`gemini_chat.py`·`chat_store.py`·`interactions.py`, `app/config.py`, `app/main.py`, `supabase/migrations/0004_chat_tables.sql` 직접 확인 (2026.11.26) — 4장의 Phase 3 구현 계약·제한 근거. 실제 사용자 JWT·DB 권한·Gemini 실호출 성공을 의미하지 않음
+- 로컬 `frontend/src/api.js`, `hooks/useChat.js`, `pages/ChatPage.jsx`, `App.jsx`, `pages/LandingPage.jsx` 직접 확인 및 가상 인증·API 브라우저 검증 (2026.11.26) — 4장의 프론트 연결·계정 전환·오류 복구 근거. 실제 계정 종단 간 검증과 구분
 - Google 공식 [모델](https://ai.google.dev/gemini-api/docs/models)·[가격](https://ai.google.dev/gemini-api/docs/pricing#gemini-3.5-flash-lite)·[REST generateContent](https://ai.google.dev/api/generate-content)·[무료 서비스 약관](https://ai.google.dev/gemini-api/terms#unpaid-services) — 모델/무료 티어, REST 호출, 개인정보 제한 근거 (2026.11.26 확인)
 - 5~6장의 "설계안" 항목은 실제 코드가 아니라 01~04 문서의 서술을 바탕으로 구성한 설계입니다. 실제 구현 시 이 문서와 코드를 맞춰 갱신이 필요합니다.
