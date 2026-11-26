@@ -91,7 +91,7 @@ export default function LandingPage({ onNavigate, auth }) {
       <section className="landing-hero relative overflow-hidden border-b border-line">
         <HeroIllustration />
         <div className="relative mx-auto max-w-[1320px] px-5 pb-20 pt-20 sm:px-8 sm:pb-28 sm:pt-28 lg:px-12">
-          <div className="mx-auto max-w-[780px] text-center">
+          <div className="mx-auto max-w-[900px] text-center">
             <p className="mb-6 inline-flex items-center gap-2 text-xs font-bold text-brand">
               <span className="h-1.5 w-1.5 rounded-full bg-brand" />
               AI 챗봇이 아니라, 공공 데이터 기반 확인
@@ -101,13 +101,13 @@ export default function LandingPage({ onNavigate, auth }) {
               <span className="hero-line hero-line-2 block text-[clamp(2rem,5vw,4rem)] leading-[1.2]">집에 있는 감기약과</span>
               <span className="hero-line hero-line-3 block text-[clamp(2rem,5vw,4rem)] leading-[1.2] text-brand">같이 먹어도 될까요?</span>
             </h1>
-            <p className="mx-auto mt-7 max-w-[580px] text-base leading-8 text-muted sm:text-lg">
-              AI 챗봇에게 물어보는 짐작이 아니라, 식약처가 공개한 공공 DUR 데이터를 직접 조회해 답합니다.
-              처방약과 집에 있는 일반의약품을 함께 먹어도 되는지 확인할 수 있습니다.
+            <p className="mx-auto mt-7 text-base leading-8 text-muted sm:text-lg">
+              <span className="block">AI 챗봇에게 물어보는 짐작이 아니라, 식약처가 공개한 공공 DUR 데이터를 직접 조회해 응답합니다.</span>
+              <span className="block">처방약과 집에 있는 일반의약품을 함께 먹어도 되는지 확인해보세요.</span>
             </p>
 
-            <p className="mt-4 flex items-start justify-center gap-2 text-base leading-7 text-muted">
-              <Icon name="info" size={16} className="mt-0.5 shrink-0" />
+            <p className="mt-4 flex items-center justify-center gap-2 text-base leading-7 text-muted">
+              <Icon name="info" size={16} className="shrink-0" />
               조회 결과는 공공자료의 확인 범위이며, 개인의 복용 안전성을 확정하지 않습니다.
             </p>
           </div>
