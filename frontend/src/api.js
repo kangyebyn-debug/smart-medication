@@ -103,3 +103,70 @@ export function updateMyProfile(accessToken, displayName) {
     body: JSON.stringify({ display_name: displayName.trim() || null }),
   });
 }
+
+function invalidChatResponse() {
+  const error = new Error("대화 응답 형식 오류");
+  error.status = 502;
+  return error;
+}
+
+async function chatRequest(path, accessToken, options = {}) {
+  const res = await fetch(`${BASE}/chat${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
+    },
+  });
+  if (!res.ok) {
+    const error = new Error("대화 요청 실패");
+    error.status = res.status;
+    throw error;
+  }
+  try {
+    return await res.json();
+  } catch {
+    throw invalidChatResponse();
+  }
+}
+
+function isChatSession(row) {
+  return row && typeof row.id === "string" && row.id.length > 0
+    && (row.title === null || typeof row.title === "string")
+    && typeof row.created_at === "string";
+}
+
+function isChatMessage(row, sessionId) {
+  return row && typeof row.id === "string" && row.id.length > 0
+    && row.session_id === sessionId && (row.role === "user" || row.role === "assistant")
+    && typeof row.content === "string" && typeof row.created_at === "string";
+}
+
+export async function createChatSession(accessToken) {
+  const row = await chatRequest("/sessions", accessToken, { method: "POST" });
+  if (!isChatSession(row)) throw invalidChatResponse();
+  return row;
+}
+
+export async function listChatSessions(accessToken) {
+  const rows = await chatRequest("/sessions", accessToken);
+  if (!Array.isArray(rows) || !rows.every(isChatSession)) throw invalidChatResponse();
+  return rows;
+}
+
+export async function listChatMessages(accessToken, sessionId) {
+  const rows = await chatRequest(`/sessions/${encodeURIComponent(sessionId)}/messages`, accessToken);
+  if (!Array.isArray(rows) || !rows.every((row) => isChatMessage(row, sessionId))) {
+    throw invalidChatResponse();
+  }
+  return rows;
+}
+
+export async function sendChatMessage(accessToken, sessionId, content) {
+  const row = await chatRequest(`/sessions/${encodeURIComponent(sessionId)}/messages`, accessToken, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+  if (!isChatMessage(row, sessionId) || row.role !== "assistant") throw invalidChatResponse();
+  return row;
+}

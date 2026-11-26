@@ -9,12 +9,14 @@ import SearchPage from "./pages/SearchPage";
 import InteractionPage from "./pages/InteractionPage";
 import MyDrugsPage from "./pages/MyDrugsPage";
 import AuthPage from "./pages/AuthPage";
+import ChatPage from "./pages/ChatPage";
 
 const NAV_ITEMS = [
   { page: "home", label: "홈", icon: "home" },
   { page: "search", label: "약품 검색", icon: "search" },
   { page: "compare", label: "병용금기 확인", icon: "noEntry" },
   { page: "my-drugs", label: "나의 약", icon: "bookmark" },
+  { page: "chat", label: "복약 질문 AI", icon: "sparkles" },
 ];
 
 export default function App() {
@@ -31,9 +33,19 @@ export default function App() {
     window.scrollTo(0, 0);
   }
 
+  function requireAuthForChat() {
+    setAuthNotice("복약 질문 AI를 사용하려면 로그인해주세요.");
+    setPage("auth");
+    window.scrollTo(0, 0);
+  }
+
   const myDrugsHook = useMyDrugs(auth.session, requireAuthForMyDrugs);
 
   function navigate(nextPage, query = "") {
+    if (nextPage === "chat" && !auth.session && !auth.loading) {
+      requireAuthForChat();
+      return;
+    }
     setAuthNotice(null);
     if (nextPage === "search") {
       setInitialQuery(query.trim());
@@ -150,6 +162,11 @@ export default function App() {
                   : <AuthPage auth={auth} myDrugsHook={myDrugsHook} notice={auth.loading ? null : "나의 약을 사용하려면 로그인해주세요."} />
               )}
               {page === "auth" && <AuthPage auth={auth} myDrugsHook={myDrugsHook} notice={authNotice} />}
+              {page === "chat" && (
+                auth.session
+                  ? <ChatPage key={auth.session.user.id} session={auth.session} onRequireAuth={requireAuthForChat} />
+                  : <AuthPage auth={auth} myDrugsHook={myDrugsHook} notice={auth.loading ? null : "복약 질문 AI를 사용하려면 로그인해주세요."} />
+              )}
             </main>
           </div>
         </div>

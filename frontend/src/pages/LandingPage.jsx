@@ -235,19 +235,15 @@ export default function LandingPage({ onNavigate, auth }) {
         <section className="mx-auto w-full max-w-[1320px] px-5 pb-16 sm:px-8 lg:px-12 lg:pb-24" aria-labelledby="ai-preview-title">
           <div className="flex flex-wrap items-center justify-between gap-10 rounded-[24px] bg-sidebar px-7 py-9 text-white sm:px-10 sm:py-11">
             <div className="max-w-[650px]">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/20 px-3 py-1 text-xs font-semibold text-white/75">
-                <Icon name="sparkles" size={14} />
-                개발 중인 기능
-              </div>
               <h2 id="ai-preview-title" className="text-2xl font-bold tracking-[-0.04em] sm:text-3xl">복약 질문 AI</h2>
               <p className="mt-3 text-base leading-7 text-white/70">
-                등록한 약을 기준으로 구어체 질문에 답하고 공공자료의 근거를 함께 보여주는 기능을 준비하고 있습니다.
+                등록한 약의 공공 DUR 병용금기 조회 결과를 바탕으로 질문에 답합니다.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white/85">
-              <Icon name="info" size={17} />
-              준비 중
-            </span>
+            <button type="button" onClick={() => onNavigate("chat")} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-brand-dark">
+              <Icon name="sparkles" size={17} />
+              복약 질문 AI 시작하기
+            </button>
           </div>
         </section>
 
